@@ -66,23 +66,31 @@ const Engine = (() => {
     if (fracElems(v, false) > 10 && fracElems(v, true) > 10) return fracToNum(v);
     return v;
   }
-  // 有限小數 → 分數(用於結果 ab/c 切換)
+  // 小數 → 分數(結果 ab/c 切換):連分數有理逼近
+  // 循環小數都轉到(3⁻¹=0.333333333333333 → 1⌟3),
+  // 條件:分數化返 15 位內部值要完全一致,且顯示元素 ≤10
   function decimalToFrac(x) {
-    if (typeof x !== 'number' || !isFinite(x)) return null;
-    const s = x.toPrecision(15).replace(/0+$/, '').replace(/\.$/, '');
-    const m = s.match(/^(-?)(\d+)(?:\.(\d+))?(?:e([+-]\d+))?$/i);
-    if (!m) return null;
-    let [, sign, ip, fp = '', ex] = m;
-    let n = BigInt(ip + fp), d = 10n ** BigInt(fp.length);
-    if (ex) {
-      const e = parseInt(ex, 10);
-      if (e > 0) n *= 10n ** BigInt(e); else d *= 10n ** BigInt(-e);
+    if (typeof x !== 'number' || !isFinite(x) || x === 0) return null;
+    const neg = x < 0, a = Math.abs(x);
+    const target = a.toPrecision(15);
+    let p0 = 0, q0 = 1, p1 = 1, q1 = 0, val = a;
+    for (let i = 0; i < 40; i++) {
+      const ai = Math.floor(val);
+      const p2 = ai * p1 + p0, q2 = ai * q1 + q0;
+      if (q2 > 1e10 || p2 > 1e10) break;
+      p0 = p1; q0 = q1; p1 = p2; q1 = q2;
+      if (q2 > 0 && (p2 / q2).toPrecision(15) === target) {
+        if (q2 === 1) return null;   // 整數,冇得轉
+        const f = mkFrac(BigInt(neg ? -p2 : p2), BigInt(q2));
+        if (!isFrac(f)) return null;
+        if (fracElems(f, false) > 10 && fracElems(f, true) > 10) return null;
+        return f;
+      }
+      const rem = val - ai;
+      if (rem < 1e-15) break;
+      val = 1 / rem;
     }
-    if (sign === '-') n = -n;
-    const f = mkFrac(n, d);
-    if (!isFrac(f)) return null; // 整數
-    if (fracElems(f, false) > 10 && fracElems(f, true) > 10) return null;
-    return f;
+    return null;
   }
 
   function add(a, b) {
