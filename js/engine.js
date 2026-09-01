@@ -763,7 +763,7 @@ const Engine = (() => {
   return {
     evaluate, format, r15, isFrac, isDms, isCplx, mkCplx, cRe, cIm,
     toNum, mkDms, decimalToFrac, fracElems,
-    evaluateBase, formatBase, fromRad,
+    evaluateBase, formatBase, fromRad, decText,
     CalcError, PI, E: E_CONST,
   };
 })();

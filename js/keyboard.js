@@ -86,9 +86,24 @@ const App = (() => {
     resultOverride: null,   // CMPLX 單次顯示覆寫 'rect'|'polar'
     fvars: {},              // FMLA 公式變數
     fmla: null,             // FMLA 狀態 {mode:'no'|'browse'|'var'|'result', ...}
+    engExp: null,           // ENG 工程記數指數(null=正常顯示)
   };
 
   const VAR_KEYS = { neg:'A', dms:'B', hyp:'C', sin:'D', rp:'X', comma:'Y', mplus:'M' };
+
+  // 40 個科學常數(手冊 E-25/26,10 頁 × 4)
+  const CONSTS = [
+    ['mp', 1.67262171e-27], ['mn', 1.67492728e-27], ['me', 9.1093826e-31], ['mμ', 1.8835314e-28],
+    ['a0', 0.5291772108e-10], ['h', 6.6260693e-34], ['μN', 5.05078343e-27], ['μB', 927.400949e-26],
+    ['ℏ', 1.05457168e-34], ['α', 7.297352568e-3], ['re', 2.817940325e-15], ['λc', 2.426310238e-12],
+    ['γp', 2.67522205e8], ['λcp', 1.3214098555e-15], ['λcn', 1.3195909067e-15], ['R∞', 10973731.568525],
+    ['u', 1.66053886e-27], ['μp', 1.41060671e-26], ['μe', -928.476412e-26], ['μn', -0.96623645e-26],
+    ['μμ', -4.49044799e-26], ['F', 96485.3383], ['e', 1.60217653e-19], ['NA', 6.0221415e23],
+    ['k', 1.3806505e-23], ['Vm', 22.413996e-3], ['R', 8.314472], ['C0', 299792458],
+    ['C1', 3.74177138e-16], ['C2', 1.4387752e-2], ['σ', 5.670400e-8], ['ε0', 8.854187817e-12],
+    ['μ0', 12.566370614e-7], ['φ0', 2.06783372e-15], ['g', 9.80665], ['G0', 7.748091733e-5],
+    ['Z0', 376.730313461], ['t', 273.15], ['G', 6.6742e-11], ['atm', 101325],
+  ];
   const APO_MS = 10 * 60 * 1000;   // 10 分鐘自動熄機
   let apoTimer = null;
   function resetApo() {
@@ -165,6 +180,12 @@ const App = (() => {
     let v = S.result;
     if (S.mode === 'BASE') {
       return { text: Engine.formatBase(Engine.toNum(v), S.base), expo: '' };
+    }
+    if (S.engExp !== null && !Engine.isCplx(v)) {   // ENG 工程記數顯示
+      const x = Engine.toNum(v);
+      const mant = Engine.r15(x / Math.pow(10, S.engExp));
+      const et = (S.engExp < 0 ? '-' : '') + String(Math.abs(S.engExp)).padStart(2, '0');
+      return { text: Engine.decText(mant), expo: et };
     }
     if (Engine.isCplx(v)) {   // 複數:先顯示實部/r,SHIFT EXE 切換
       let part;
@@ -255,7 +276,7 @@ const App = (() => {
   function beginInputIfNeeded() {
     if (S.phase === 'result' || S.phase === 'error') {
       S.tokens = []; S.cursor = 0; S.phase = 'input';
-      S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false;
+      S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false; S.engExp = null;
     }
   }
   function insertTok(tok) {
@@ -270,7 +291,7 @@ const App = (() => {
   function insertOp(tok) {
     if (S.phase === 'result') {
       S.tokens = [T.ans()]; S.cursor = 1; S.phase = 'input';
-      S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false;
+      S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false; S.engExp = null;
     }
     insertTok(tok);
   }
@@ -298,7 +319,7 @@ const App = (() => {
       const v = S.mode === 'BASE' ? Engine.evaluateBase(S.tokens, env) : Engine.evaluate(S.tokens, env);
       S.ans = v;
       S.result = v; S.lastVal = v; S.resultSuffix = suffix || '';
-      S.dispAlt = null; S.dispImproper = false; S.altFracCache = null;
+      S.dispAlt = null; S.dispImproper = false; S.engExp = null; S.altFracCache = null;
       S.showIm = false;
       S.resultOverride = env.dispOverride || null;
       if (after) after(v);
@@ -345,6 +366,20 @@ const App = (() => {
   function openDrgMenu() {
     S.phase = 'menu';
     S.menu = { kind: 'drg', page: 0, lines: [[' Deg Rad Gra', '  1   2   3']], keepInput: true };
+  }
+  function openConstMenu() {   // CONST 十頁,每頁 4 個(手冊 E-24)
+    const lines = [];
+    for (let p = 0; p < 10; p++) {
+      let top = ' ', bot = ' ';
+      for (let i = 0; i < 4; i++) {
+        const sym = CONSTS[p * 4 + i][0];
+        top += sym.padEnd(4, ' ');
+        bot += (i + 1) + '   ';
+      }
+      lines.push([top, bot]);
+    }
+    S.phase = 'menu';
+    S.menu = { kind: 'constm', page: 0, lines };
   }
   function openLogicMenu() {   // BASE:LOGIC 三頁(手冊 E-54)
     S.phase = 'menu';
@@ -424,6 +459,14 @@ const App = (() => {
       if (u) {
         exitMenu();
         insertOp(T.aunit(u, { D:'°', R:'ʳ', G:'ᵍ' }[u]));
+      }
+      return;
+    }
+    if (m.kind === 'constm') {
+      if (digit >= 1 && digit <= 4) {
+        const c = CONSTS[m.page * 4 + (digit - 1)];
+        exitMenu();
+        insertTok({ t: 'const', d: c[0], value: c[1] });
       }
       return;
     }
@@ -725,7 +768,7 @@ const App = (() => {
       case 'ac':
         if (shift) { S.phase = 'off'; break; }
         S.tokens = []; S.cursor = 0; S.phase = 'input';
-        S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false;
+        S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false; S.engExp = null;
         S.lastVal = 0;   // AC 顯示歸 0.
         break;
       case 'del':
@@ -748,7 +791,7 @@ const App = (() => {
           break;
         }
         if (S.phase === 'result') {   // ◄=游標去尾,►=去頭(手冊 E-19)
-          S.phase = 'input'; S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false;
+          S.phase = 'input'; S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false; S.engExp = null;
           S.cursor = (id === 'rep_l') ? S.tokens.length : 0;
           S.histIdx = null;
           break;
@@ -773,7 +816,7 @@ const App = (() => {
         S.tokens = h.tokens.slice();
         S.cursor = S.tokens.length;
         S.result = h.value; S.resultSuffix = h.suffix || '';
-        S.dispAlt = null; S.dispImproper = false;
+        S.dispAlt = null; S.dispImproper = false; S.engExp = null;
         S.phase = 'result';
         break;
       }
@@ -785,7 +828,7 @@ const App = (() => {
       case 'd4': insertTok(T.d('4')); break;
       case 'd5': insertTok(T.d('5')); break;
       case 'd6': insertTok(T.d('6')); break;
-      case 'd7': insertTok(T.d('7')); break;   // CONST 未實裝
+      case 'd7': if (shift) { openConstMenu(); break; } insertTok(T.d('7')); break;
       case 'd8': insertTok(T.d('8')); break;
       case 'd9': if (shift) { openClrMenu(); break; } insertTok(T.d('9')); break;
       case 'dot': insertTok(shift ? T.ran() : T.dot()); break;
@@ -827,7 +870,18 @@ const App = (() => {
       case 'comma': insertTok(T.comma()); break;
 
       case 'rcl': S.pending = shift ? 'STO' : 'RCL'; break;
-      case 'eng': break;   // ENG 轉換未實裝
+      case 'eng': {   // 工程記數:ENG▸ / SHIFT ◂ENG(手冊 E-33)
+        if (S.phase !== 'result') break;
+        let x;
+        try { x = Engine.toNum(S.result); } catch (e) { break; }
+        if (x === 0) break;
+        const mag = Math.floor(Math.log10(Math.abs(x)));
+        if (S.engExp === null) S.engExp = shift ? 3 * Math.floor(mag / 3) + 3 : 3 * Math.floor(mag / 3);
+        else S.engExp += shift ? 3 : -3;
+        const m = Math.abs(x / Math.pow(10, S.engExp));
+        if (m >= 1e10 || m < 1e-9 || Math.abs(S.engExp) > 99) S.engExp += shift ? -3 : 3;   // 頂咗就回退
+        break;
+      }
       case 'mplus': doMPlus(shift); return;
       case 'ans': shift ? openDrgMenu() : insertTok(T.ans()); break;
       default: break;
