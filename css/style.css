@@ -28,21 +28,21 @@ body {
   border-radius:4% / 2%;
   box-shadow:inset 0 0 6px rgba(0,0,0,.25);
 }
-#topcase { position:absolute; left:2.5%; right:2.5%; top:1%; height:27.5%; z-index:2; }
-#brandrow { position:absolute; left:7%; right:5%; top:3.5%; height:20%; display:flex; justify-content:space-between; align-items:center; }
+#topcase { position:absolute; left:2.5%; right:2.5%; top:1%; height:24%; z-index:2; }
+#brandrow { position:absolute; left:7%; right:5%; top:2%; height:20%; display:flex; justify-content:space-between; align-items:center; }
 #logo { font-weight:700; letter-spacing:.06em; color:#26282c; font-size:clamp(10px, 2.6vh, 26px); font-family:Arial, sans-serif; }
 #solar {
   width:46%; height:100%; background:#1c1108; border-radius:6% / 20%;
   border:2px solid #4a4d52; display:flex; overflow:hidden;
 }
 #solar i { flex:1; background:linear-gradient(180deg,#3b1d0a,#59250b 60%,#40190a); border-right:1px solid #14100c; }
-#model { position:absolute; left:7%; top:25%; color:#3a3d42; font-style:italic; font-weight:600; font-size:clamp(7px, 1.5vh, 15px); font-family:Georgia, serif; }
-#banner { position:absolute; left:5%; right:5%; top:36%; height:9%; display:flex; justify-content:space-between; align-items:center; }
+#model { position:absolute; left:7%; top:9%; color:#3a3d42; font-style:italic; font-weight:600; font-size:clamp(7px, 1.5vh, 15px); font-family:Georgia, serif; }
+#banner { position:absolute; left:5%; right:5%; top:23%; height:9%; display:flex; justify-content:space-between; align-items:center; }
 #hkeaa { color:#e04616; font-weight:700; font-size:clamp(6px, 1.15vh, 12px); letter-spacing:.02em; display:flex; align-items:center; gap:1px; }
 #hkeaa .sq { display:inline-block; width:.55em; height:.9em; background:#e04616; margin-right:1px; }
 #superfx { color:#26282c; font-weight:800; font-style:italic; font-size:clamp(6px, 1.15vh, 12px); letter-spacing:.03em; }
 #bezel {
-  position:absolute; left:4.5%; right:4.5%; top:45%; height:53%;
+  position:absolute; left:4.5%; right:4.5%; top:33%; height:64%;
   background:linear-gradient(180deg,#191b1f,#2a2d33);
   border-radius:7% / 18%;
   box-shadow:inset 0 2px 6px rgba(0,0,0,.8), 0 1px 1px rgba(255,255,255,.4);
@@ -56,7 +56,7 @@ body {
   box-shadow:inset 0 1px 4px rgba(0,0,0,.45);
 }
 
-#keys { position:absolute; left:2.5%; right:2.5%; top:28.5%; bottom:1%; z-index:2; }
+#keys { position:absolute; left:2.5%; right:2.5%; top:25%; bottom:1%; z-index:2; }
 .key {
   position:absolute;
   display:flex; align-items:center; justify-content:center;
