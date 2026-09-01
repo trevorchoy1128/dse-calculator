@@ -430,6 +430,7 @@ const App = (() => {
     if (id === 'on') { exitMenu(); S.tokens = []; S.cursor = 0; return; }
     if (id === 'ac') { exitMenu(); return; }
     if (id === 'prog' && shift) { exitMenu(); return; }      // EXIT
+    if (id === 'prog' && m.kind === 'parea') { exitMenu(); return; }   // Prog 再撳一次退出(用戶實機核實)
     if (id === 'mode') {
       if (shift) { openSetupMenu(); return; }
       if (m.kind === 'mode') { exitMenu(); return; }   // 撳第二下 MODE 返主畫面(用戶實機核實);轉頁用 ◄►
@@ -1104,7 +1105,7 @@ const App = (() => {
   }
   function fmlaKey(id, shift) {
     const F = S.fmla;
-    if (id === 'ac' || id === 'on' || (id === 'prog' && shift)) { exitFmla(); return; }
+    if (id === 'ac' || id === 'on' || id === 'fmla' || (id === 'prog' && shift)) { exitFmla(); return; }   // FMLA 再撳一次退出
     const digit = { d1:1, d2:2, d3:3, d4:4, d5:5, d6:6, d7:7, d8:8, d9:9, d0:0 }[id];
 
     if (F.mode === 'no') {
@@ -1309,7 +1310,7 @@ const App = (() => {
         S.history = []; S.histIdx = null;
         S.lastVal = 0;
         S.run = null; S.runWait = null; S.pe = null; S.fmla = null;
-        if (S.mode === 'PRGM') openPrgmMenu();
+        if (S.mode === 'PRGM') S.mode = 'COMP';   // 開機一律顯示 0. 畫面(用戶核實)
         break;
       case 'ac':
         if (shift) { S.phase = 'off'; break; }
