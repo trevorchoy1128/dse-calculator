@@ -1,4 +1,4 @@
-const CACHE = 'fx50fhii-v3';
+const CACHE = 'fx50fhii-v4';
 const ASSETS = [
   '.', 'index.html', 'css/style.css',
   'js/font.js', 'js/display.js', 'js/engine.js', 'js/fmla.js', 'js/stat.js', 'js/program.js',
@@ -14,12 +14,13 @@ self.addEventListener('activate', e => {
       .then(() => self.clients.claim())
   );
 });
+// 先網絡、後緩存:有網即攞最新版,離線先用緩存
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+    fetch(e.request).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, copy));
       return res;
-    }))
+    }).catch(() => caches.match(e.request))
   );
 });
