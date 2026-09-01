@@ -145,6 +145,10 @@ const LCD = (() => {
     if (state.baseLetter) {
       drawText(state.baseLetter, 486, BOT.y + 12, 3.2);
     }
+    // 右下細字(程式編輯 byte 數等)
+    if (state.smallRight) {
+      drawText(state.smallRight, W - 20 - state.smallRight.length * 18, BOT.y + 14, 3);
+    }
   }
 
   return { init, draw, setContrast };

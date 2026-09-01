@@ -282,6 +282,20 @@ const Engine = (() => {
 
     function parseExpr() {
       enter();
+      let l = parseAddSub();
+      // 關係運算子(優先級 9,程式用):結果 1=真 0=假
+      if (!atEnd() && peek().t === 'relop') {
+        const op = next().name;
+        const r = parseAddSub();
+        const a = toNum(l), b = toNum(r);
+        const res = { '=': a === b, '≠': a !== b, '>': a > b, '≥': a >= b, '<': a < b, '≤': a <= b }[op];
+        l = res ? 1 : 0;
+      }
+      leave();
+      return l;
+    }
+    function parseAddSub() {
+      enter();
       let l = parseMulDiv();
       while (!atEnd() && peek().t === 'op' && (peek().d === '+' || peek().d === '-')) {
         const op = next().d;
@@ -411,6 +425,11 @@ const Engine = (() => {
           next();
           v = fromRad(toRad(toNum(v), tk.name), env.angle);
         }
+        else if (tk.t === 'stpost') { // 統計推算值 x̂ ŷ x̂1 x̂2(優先級 5)
+          next();
+          if (!env.statPost) throw SYN(pos);
+          v = env.statPost(tk.name, toNum(v));
+        }
         else break;
       }
       leave();
@@ -470,6 +489,11 @@ const Engine = (() => {
       else if (tk.t === 'var') { next(); v = env.mem[tk.name] !== undefined ? env.mem[tk.name] : 0; }
       else if (tk.t === 'ran') { next(); v = Math.floor(Math.random() * 1000) / 1000; }
       else if (tk.t === 'const') { next(); v = tk.value; }
+      else if (tk.t === 'stat') {   // 統計命令(x̄、Σx、a、b、r …)
+        next();
+        if (!env.statFn) throw SYN(pos);
+        v = env.statFn(tk.name);
+      }
       else if (tk.t === 'lp') {
         next();
         v = parseExpr();

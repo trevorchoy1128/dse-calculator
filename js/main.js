@@ -76,6 +76,7 @@
   });
 
   LCD.init(document.getElementById('lcd'));
+  LCD.setContrast(App.state.contrast);
   fit();
   setTimeout(fit, 50);
   App.render();

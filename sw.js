@@ -1,7 +1,8 @@
-const CACHE = 'fx50fhii-v2';
+const CACHE = 'fx50fhii-v3';
 const ASSETS = [
   '.', 'index.html', 'css/style.css',
-  'js/font.js', 'js/display.js', 'js/engine.js', 'js/keyboard.js', 'js/main.js',
+  'js/font.js', 'js/display.js', 'js/engine.js', 'js/fmla.js', 'js/stat.js', 'js/program.js',
+  'js/keyboard.js', 'js/main.js',
   'manifest.webmanifest', 'icon-192.png', 'icon-512.png',
 ];
 self.addEventListener('install', e => {

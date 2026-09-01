@@ -128,8 +128,8 @@ A B C D E F M X Y + Ans;STO/RCL;M+/M−(累加到 M)
 - [x] 第 2 版:對照官方手冊重寫 — 自然輸入(帶括號函數)、正確優先次序、SETUP 六頁、MODE 兩頁、DMS 型態、結果切換、DRG▸、CLR 確認、對比度、範圍檢查、自動熄機(手冊全部例題通過)
 - [x] 第 3 版:**CMPLX**(i、∠ 極座標輸入、Re⇔Im 切換、a+bi/r∠θ 設定+▸覆寫、Abs/arg/Conjg、x² x³ x⁻¹ 複數、轉模式清虛部)+ **BASE**(DEC/HEX/BIN/OCT、10/30/32-bit 二補碼、LOGIC 三頁選單、and/or/xor/xnor/Not/Neg、d h b o 前綴、結果按鍵轉底、÷ 捨小數、A~F 直接輸入)+ **FMLA**(23 條公式、Formula No.? 兩位數選擇、▲▼瀏覽、變數逐個提示保留舊值、多結果 EXE 翻頁、f= 前綴顯示)— 手冊例題全部通過
 - [x] 第 4 版:**CONST**(40 常數、10 頁選單)+ **ENG / ◂ENG** 工程記數(手冊例題通過)+ 移除機身 CASIO / H.K.E.A.A. 字樣、預設熄機、MODE 兩下返主畫面
-- [ ] 第 5 版:SD / REG 統計模式
-- [ ] 第 6 版:PRGM 程式模式(?、→、:、◢、⇒、比較跳轉、Goto/Lbl、680 bytes 計算)
+- [x] 第 5 版:**SD / REG 統計**(DT/;頻率輸入、▲▼ 睇改刪數據、CL、S-SUM 全套 Σ、S-VAR x̄ σ minmax、七種迴歸 a b c r、x̂ ŷ x̂1 x̂2、入 REG 揀迴歸型、Data Full 上限、CLR Stat 變體、轉模式/改 Freq 清數據)+ **PRGM 程式**(EDIT/RUN/DEL、4 區共 680 bytes 每 token 1 byte、run mode 選擇、P-CMD 選單、? → : ◢ ⇒ Goto/Lbl If/Then/Else/IfEnd For/To/Step/Next While/WhileEnd Break、設定指令 Deg~Norm/Freq/Clr~/進制、DT/M+、Prog 鍵跨模式執行、錯誤 ◄► 入編輯、byte 計數顯示)+ **localStorage 持久化**(熄機保留模式/設定/記憶/程式,同真機一樣)— 手冊例程(吋轉 cm 10 bytes 餘 670、Goto 三角形面積迴圈)通過
+- 全部六個模式已實裝完成 🎉
 - FMLA 註:fx-50FH II 冇 LOOK 功能(fx-50F PLUS 先有,用戶證實)— 冇做
 - FMLA 待核實:畫面上公式名稱串法(暫時自擬,實機 ▲▼ 逐條對 — **用戶已指出 01 同真機唔同**;網上冇來源,要用戶報實機名單)、變數輸入暫時只支援數字(真機可能容許算式)
 - FMLA layout 已按手冊 E-57 修正:變數輸入畫面 = 下行數值 + 變數名細字掛右邊(「0 ₐ」→「8 ₐ」),唔係「a?」提示;瀏覽畫面下行保留上次結果
