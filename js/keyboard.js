@@ -433,7 +433,11 @@ const App = (() => {
     if (id === 'prog' && m.kind === 'parea') { exitMenu(); return; }   // Prog 再撳一次退出(用戶實機核實)
     if (id === 'mode') {
       if (shift) { openSetupMenu(); return; }
-      if (m.kind === 'mode') { exitMenu(); return; }   // 撳第二下 MODE 返主畫面(用戶實機核實);轉頁用 ◄►
+      if (m.kind === 'mode') {   // MODE 順序:1 2 3 → 4 5 6 → 退出(用戶實機核實)
+        if (m.page < m.lines.length - 1) m.page++;
+        else exitMenu();
+        return;
+      }
       openModeMenu(); return;
     }
     if (id === 'rep_l' || id === 'rep_r') {
