@@ -2,60 +2,60 @@
 
 /* ---- 佈局(% 座標,相對 #keys 容器;依官方產品圖量度) ---- */
 const KEY_DEFS = [
-  ['shift', 5.8,  8.4, 13.7, 5.9, 'k-grey k-pill', '', '<span class="c-plain">SHIFT</span>'],
-  ['alpha', 21.6, 8.4, 13.7, 5.9, 'k-grey k-pill', '', '<span class="c-alpha">ALPHA</span>'],
-  ['mode',  65.8, 8.4, 13.7, 5.9, 'k-grey k-pill', '', '<span class="c-plain">MODE</span><span class="c-shift">SETUP</span>'],
-  ['on',    81.6, 8.4, 13.7, 5.9, 'k-grey k-pill', '', '<span class="c-plain">ON</span>'],
+  ['shift', 5.8,  8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">SHIFT</span>'],
+  ['alpha', 21.4, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-alpha">ALPHA</span>'],
+  ['mode',  65.8, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">MODE</span><span class="c-shift">SETUP</span>'],
+  ['on',    81.6, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">ON</span>'],
 
-  ['prog', 5.8,  21, 13.7, 5.9, 'k-orange k-pill', 'Prog', '<span class="c-shift">EXIT</span>'],
-  ['fmla', 21.6, 21, 13.7, 5.9, 'k-orange k-pill', 'FMLA', ''],
-  ['inv',  65.8, 21, 13.7, 5.9, 'k-grey k-pill k-it', '<i>x</i><sup>-1</sup>', '<span class="c-shift"><i>x</i>!</span><span class="c-green">LOGIC</span>'],
-  ['cube', 81.6, 21, 13.7, 5.9, 'k-grey k-pill k-it', '<i>x</i><sup>3</sup>', '<span class="c-shift">³√</span>'],
+  ['prog', 5.8,  21, 13.7, 5.4, 'k-orange k-pill', 'Prog', '<span class="c-shift">EXIT</span>'],
+  ['fmla', 21.4, 21, 13.7, 5.4, 'k-orange k-pill', 'FMLA', ''],
+  ['inv',  68.1, 21, 13.7, 5.4, 'k-grey k-pill k-it', '<i>x</i><sup>-1</sup>', '<span class="c-shift"><i>x</i>!</span><span class="c-green">LOGIC</span>'],
+  ['cube', 83.7, 21, 13.7, 5.4, 'k-grey k-pill k-it', '<i>x</i><sup>3</sup>', '<span class="c-shift">³√</span>'],
 
-  ['abc',  5.8,  29.9, 13.7, 5.6, 'k-dark', 'a<span class="sm">b/c</span>', '<span class="c-shift">d/c</span>'],
-  ['sqrt', 21.4, 29.9, 13.7, 5.6, 'k-dark', '√', ''],
-  ['sq',   36.9, 29.9, 13.7, 5.6, 'k-dark', '<i>x</i><sup>2</sup>', '<span class="c-green">DEC</span>'],
-  ['pow',  52.5, 29.9, 13.7, 5.6, 'k-dark', '^', '<span class="c-shift">ˣ√</span><span class="c-green">HEX</span>'],
-  ['log',  68.1, 29.9, 13.7, 5.6, 'k-dark', 'log', '<span class="c-shift">10<sup>x</sup></span><span class="c-green">BIN</span>'],
-  ['ln',   83.7, 29.9, 13.7, 5.6, 'k-dark', 'ln', '<span class="c-shift">e<sup>x</sup></span><span class="c-alpha"><i>e</i></span><span class="c-green">OCT</span>'],
+  ['abc',  5.8,  29.9, 13.7, 5.1, 'k-dark', 'a<span class="sm">b/c</span>', '<span class="c-shift">d/c</span>'],
+  ['sqrt', 21.4, 29.9, 13.7, 5.1, 'k-dark', '√', ''],
+  ['sq',   36.9, 29.9, 13.7, 5.1, 'k-dark', '<i>x</i><sup>2</sup>', '<span class="c-green">DEC</span>'],
+  ['pow',  52.5, 29.9, 13.7, 5.1, 'k-dark', '^', '<span class="c-shift">ˣ√</span><span class="c-green">HEX</span>'],
+  ['log',  68.1, 29.9, 13.7, 5.1, 'k-dark', 'log', '<span class="c-shift">10<sup>x</sup></span><span class="c-green">BIN</span>'],
+  ['ln',   83.7, 29.9, 13.7, 5.1, 'k-dark', 'ln', '<span class="c-shift">e<sup>x</sup></span><span class="c-alpha"><i>e</i></span><span class="c-green">OCT</span>'],
 
-  ['neg',  5.8,  38.8, 13.7, 5.6, 'k-dark', '(−)', '<span class="c-shift">∠</span><span class="c-alpha">A</span>'],
-  ['dms',  21.4, 38.8, 13.7, 5.6, 'k-dark', '°’”', '<span class="c-alpha">B</span>'],
-  ['hyp',  36.9, 38.8, 13.7, 5.6, 'k-dark', 'hyp', '<span class="c-alpha">C</span>'],
-  ['sin',  52.5, 38.8, 13.7, 5.6, 'k-dark', 'sin', '<span class="c-shift">sin<sup>-1</sup></span><span class="c-alpha">D</span>'],
-  ['cos',  68.1, 38.8, 13.7, 5.6, 'k-dark', 'cos', '<span class="c-shift">cos<sup>-1</sup></span><span class="c-green">E</span>'],
-  ['tan',  83.7, 38.8, 13.7, 5.6, 'k-dark', 'tan', '<span class="c-shift">tan<sup>-1</sup></span><span class="c-green">F</span>'],
+  ['neg',  5.8,  38.8, 13.7, 5.1, 'k-dark', '(−)', '<span class="c-shift">∠</span><span class="c-alpha">A</span>'],
+  ['dms',  21.4, 38.8, 13.7, 5.1, 'k-dark', '°’”', '<span class="c-alpha">B</span>'],
+  ['hyp',  36.9, 38.8, 13.7, 5.1, 'k-dark', 'hyp', '<span class="c-alpha">C</span>'],
+  ['sin',  52.5, 38.8, 13.7, 5.1, 'k-dark', 'sin', '<span class="c-shift">sin<sup>-1</sup></span><span class="c-alpha">D</span>'],
+  ['cos',  68.1, 38.8, 13.7, 5.1, 'k-dark', 'cos', '<span class="c-shift">cos<sup>-1</sup></span><span class="c-green">E</span>'],
+  ['tan',  83.7, 38.8, 13.7, 5.1, 'k-dark', 'tan', '<span class="c-shift">tan<sup>-1</sup></span><span class="c-green">F</span>'],
 
-  ['rcl',  5.8,  47.7, 13.7, 5.6, 'k-dark', 'RCL', '<span class="c-shift">STO</span>'],
-  ['eng',  21.4, 47.7, 13.7, 5.6, 'k-dark', 'ENG', '<span class="c-shift">←</span><span class="c-alpha"><i>i</i></span>'],
-  ['lp',   36.9, 47.7, 13.7, 5.6, 'k-dark', '(', '<span class="c-shift">%</span>'],
-  ['rp',   52.5, 47.7, 13.7, 5.6, 'k-dark', ')', '<span class="c-shift">Abs</span><span class="c-alpha">X</span>'],
-  ['comma',68.1, 47.7, 13.7, 5.6, 'k-dark', ',', '<span class="c-shift">;</span><span class="c-alpha">Y</span>'],
-  ['mplus',83.7, 47.7, 13.7, 5.6, 'k-dark', 'M+', '<span class="c-shift">M−</span><span class="c-alpha">M</span>'],
+  ['rcl',  5.8,  47.7, 13.7, 5.1, 'k-dark', 'RCL', '<span class="c-shift">STO</span>'],
+  ['eng',  21.4, 47.7, 13.7, 5.1, 'k-dark', 'ENG', '<span class="c-shift">←</span><span class="c-alpha"><i>i</i></span>'],
+  ['lp',   36.9, 47.7, 13.7, 5.1, 'k-dark', '(', '<span class="c-shift">%</span>'],
+  ['rp',   52.5, 47.7, 13.7, 5.1, 'k-dark', ')', '<span class="c-shift">Abs</span><span class="c-alpha">X</span>'],
+  ['comma',68.1, 47.7, 13.7, 5.1, 'k-dark', ',', '<span class="c-shift">;</span><span class="c-alpha">Y</span>'],
+  ['mplus',83.7, 47.7, 13.7, 5.1, 'k-dark', 'M+', '<span class="c-shift">M−</span><span class="c-alpha">M</span>'],
 
-  ['d7', 5.8,  56.6, 15.8, 7, 'k-dark k-num', '7', '<span class="c-shift">CONST</span>'],
-  ['d8', 24.7, 56.6, 15.8, 7, 'k-dark k-num', '8', ''],
-  ['d9', 43.7, 56.6, 15.8, 7, 'k-dark k-num', '9', '<span class="c-shift">CLR</span>'],
-  ['del',62.6, 56.6, 15.8, 7, 'k-red k-num', 'DEL', '<span class="c-shift">INS</span>'],
-  ['ac', 81.6, 56.6, 15.8, 7, 'k-red k-num', 'AC', '<span class="c-shift">OFF</span>'],
+  ['d7', 5.8,  56.6, 15.8, 6.4, 'k-dark k-num', '7', '<span class="c-shift">CONST</span>'],
+  ['d8', 24.7, 56.6, 15.8, 6.4, 'k-dark k-num', '8', ''],
+  ['d9', 43.7, 56.6, 15.8, 6.4, 'k-dark k-num', '9', '<span class="c-shift">CLR</span>'],
+  ['del',62.6, 56.6, 15.8, 6.4, 'k-red k-num', 'DEL', '<span class="c-shift">INS</span>'],
+  ['ac', 81.6, 56.6, 15.8, 6.4, 'k-red k-num', 'AC', '<span class="c-shift">OFF</span>'],
 
-  ['d4', 5.8,  67, 15.8, 7, 'k-dark k-num', '4', ''],
-  ['d5', 24.7, 67, 15.8, 7, 'k-dark k-num', '5', ''],
-  ['d6', 43.7, 67, 15.8, 7, 'k-dark k-num', '6', ''],
-  ['mul',62.6, 67, 15.8, 7, 'k-dark k-num', '×', '<span class="c-shift">nPr</span>'],
-  ['div',81.6, 67, 15.8, 7, 'k-dark k-num', '÷', '<span class="c-shift">nCr</span>'],
+  ['d4', 5.8,  67, 15.8, 6.4, 'k-dark k-num', '4', ''],
+  ['d5', 24.7, 67, 15.8, 6.4, 'k-dark k-num', '5', ''],
+  ['d6', 43.7, 67, 15.8, 6.4, 'k-dark k-num', '6', ''],
+  ['mul',62.6, 67, 15.8, 6.4, 'k-dark k-num', '×', '<span class="c-shift">nPr</span>'],
+  ['div',81.6, 67, 15.8, 6.4, 'k-dark k-num', '÷', '<span class="c-shift">nCr</span>'],
 
-  ['d1', 5.8,  77.3, 15.8, 7, 'k-dark k-num', '1', '<span class="c-shift">S-SUM</span>'],
-  ['d2', 24.7, 77.3, 15.8, 7, 'k-dark k-num', '2', '<span class="c-shift">S-VAR</span>'],
-  ['d3', 43.7, 77.3, 15.8, 7, 'k-dark k-num', '3', '<span class="c-shift">P-CMD</span>'],
-  ['add',62.6, 77.3, 15.8, 7, 'k-dark k-num', '+', '<span class="c-shift">Pol(</span>'],
-  ['sub',81.6, 77.3, 15.8, 7, 'k-dark k-num', '−', '<span class="c-shift">Rec(</span>'],
+  ['d1', 5.8,  77.3, 15.8, 6.4, 'k-dark k-num', '1', '<span class="c-shift">S-SUM</span>'],
+  ['d2', 24.7, 77.3, 15.8, 6.4, 'k-dark k-num', '2', '<span class="c-shift">S-VAR</span>'],
+  ['d3', 43.7, 77.3, 15.8, 6.4, 'k-dark k-num', '3', '<span class="c-shift">P-CMD</span>'],
+  ['add',62.6, 77.3, 15.8, 6.4, 'k-dark k-num', '+', '<span class="c-shift">Pol(</span>'],
+  ['sub',81.6, 77.3, 15.8, 6.4, 'k-dark k-num', '−', '<span class="c-shift">Rec(</span>'],
 
-  ['d0', 5.8,  87.7, 15.8, 7, 'k-dark k-num', '0', '<span class="c-shift">Rnd</span>'],
-  ['dot',24.7, 87.7, 15.8, 7, 'k-dark k-num', '·', '<span class="c-shift">Ran#</span>'],
-  ['expk',43.7,87.7, 15.8, 7, 'k-dark k-num', 'EXP', '<span class="c-shift">π</span>'],
-  ['ans',62.6, 87.7, 15.8, 7, 'k-dark k-num', 'Ans', '<span class="c-shift">DRG▸</span>'],
-  ['exe',81.6, 87.7, 15.8, 7, 'k-dark k-num', 'EXE', '<span class="c-shift">Re⇔Im</span>'],
+  ['d0', 5.8,  87.7, 15.8, 6.4, 'k-dark k-num', '0', '<span class="c-shift">Rnd</span>'],
+  ['dot',24.7, 87.7, 15.8, 6.4, 'k-dark k-num', '·', '<span class="c-shift">Ran#</span>'],
+  ['expk',43.7,87.7, 15.8, 6.4, 'k-dark k-num', 'EXP', '<span class="c-shift">π</span>'],
+  ['ans',62.6, 87.7, 15.8, 6.4, 'k-dark k-num', 'Ans', '<span class="c-shift">DRG▸</span>'],
+  ['exe',81.6, 87.7, 15.8, 6.4, 'k-dark k-num', 'EXE', '<span class="c-shift">Re⇔Im</span>'],
 ];
 
 /* ---- App 狀態 ---- */
@@ -352,8 +352,8 @@ const App = (() => {
     S.menu = {
       kind: 'mode', page: 0,
       lines: [
-        ['COMP CMPLX BASE', ' 1    2     3'],
-        ['SD   REG   PRGM', ' 4    5     6'],
+        menuLines(['COMP', 'CMPLX', 'BASE']),
+        menuLines(['SD', 'REG', 'PRGM'], 4),
       ],
     };
   }
@@ -362,11 +362,11 @@ const App = (() => {
     S.menu = {
       kind: 'setup', page: 0,
       lines: [
-        [' Deg Rad Gra',    '  1   2   3'],
-        [' Fix Sci Norm',   '  1   2   3'],
-        [' ab/c d/c',       '  1    2'],
-        [' a+bi r∠θ',       '  1    2'],
-        [' FreqOn FreqOff', '  1      2'],
+        menuLines(['Deg', 'Rad', 'Gra']),
+        menuLines(['Fix', 'Sci', 'Norm']),
+        menuLines(['ab/c', 'd/c']),
+        menuLines(['a+bi', 'r∠θ']),
+        menuLines(['FreqOn', 'FreqOff']),
         ['◂LIGHT     DARK▸', ''],
       ],
     };
@@ -376,12 +376,12 @@ const App = (() => {
     const stat = S.mode === 'SD' || S.mode === 'REG';
     S.menu = {
       kind: 'clr', page: 0, statVariant: stat,
-      lines: [stat ? [' Stat Setup All', '  1    2     3'] : [' Mem Setup All', '  1   2     3']],
+      lines: [stat ? menuLines(['Stat', 'Setup', 'All']) : menuLines(['Mem', 'Setup', 'All'])],
     };
   }
   function openDrgMenu() {
     S.phase = 'menu';
-    S.menu = { kind: 'drg', page: 0, lines: [[' Deg Rad Gra', '  1   2   3']], keepInput: true };
+    S.menu = { kind: 'drg', page: 0, lines: [menuLines(['Deg', 'Rad', 'Gra'])], keepInput: true };
   }
   function openConstMenu() {   // CONST 十頁,每頁 4 個(手冊 E-24)
     const lines = [];
@@ -402,9 +402,9 @@ const App = (() => {
     S.menu = {
       kind: 'logic', page: 1,
       lines: [
-        [' d   h   b   o', '  1   2   3   4'],
-        [' and  or  xnor', '  1    2    3'],
-        [' xor  Not  Neg', '  1    2    3'],
+        menuLines(['d', 'h', 'b', 'o']),
+        menuLines(['and', 'or', 'xnor']),
+        menuLines(['xor', 'Not', 'Neg']),
       ],
     };
   }
@@ -412,15 +412,20 @@ const App = (() => {
     S.phase = (S.menu && S.menu.returnPhase) || 'input';
     S.menu = null;
   }
-  // 通用選單行:項目 + 數字對齊第二個字元下面
-  function menuLines(items) {
-    let top = ' ', bot = ' ';
+  // 通用選單行:項目喺 16 格內置中平均分佈,數字對齊項目中間下面
+  function menuLines(items, startDigit) {
+    const W = 16;
+    const total = items.reduce((s, it) => s + it.length, 0);
+    const k = items.length;
+    let gap = k > 1 ? Math.max(1, Math.min(4, Math.floor((W - total - 2) / (k - 1)))) : 0;
+    let margin = Math.max(0, Math.floor((W - total - gap * (k - 1)) / 2));
+    let top = ' '.repeat(margin), bot = '';
     items.forEach((it, i) => {
       const startCol = top.length;
-      top += it + ' ';
-      const digitCol = startCol + (it.length > 1 ? 1 : 0);
+      top += it + (i < k - 1 ? ' '.repeat(gap) : '');
+      const digitCol = startCol + Math.floor((it.length - 1) / 2);
       while (bot.length < digitCol) bot += ' ';
-      bot += String(i + 1);
+      bot += String((startDigit || 1) + i);
     });
     return [top, bot];
   }
