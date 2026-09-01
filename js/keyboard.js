@@ -70,7 +70,7 @@ const App = (() => {
     hypPending: 0,             // 0 無 | 1 hyp | 2 hyp⁻¹
     insertOver: false,
     tokens: [], cursor: 0,
-    phase: 'input',            // input | result | error | menu | off
+    phase: 'off',              // 預設熄機,撳 ON 先開(真機行為)| input | result | error | menu | fmla | off
     result: null, resultSuffix: '',
     dispImproper: false, dispAlt: null,  // dispAlt: null|'dec'|'frac'|'dms'
     altFracCache: null,
@@ -366,7 +366,7 @@ const App = (() => {
     if (id === 'prog' && shift) { exitMenu(); return; }      // EXIT
     if (id === 'mode') {
       if (shift) { openSetupMenu(); return; }
-      if (m.kind === 'mode') { m.page = (m.page + 1) % m.lines.length; return; }
+      if (m.kind === 'mode') { exitMenu(); return; }   // 撳第二下 MODE 返主畫面(用戶實機核實);轉頁用 ◄►
       openModeMenu(); return;
     }
     if (id === 'rep_l' || id === 'rep_r') {
