@@ -65,7 +65,7 @@ const App = (() => {
     setup: { mode: 'norm', norm: 1, digits: 0 },   // 預設 Norm1(手冊 E-10)
     fracImproper: false,       // SETUP 分數格式:false=ab/c 帶分數
     cmplxPolar: false, freqOn: true,
-    contrast: 10,
+    contrast: 20,   // 預設最深色
     shift: false, alpha: false,
     hypPending: 0,             // 0 無 | 1 hyp | 2 hyp⁻¹
     insertOver: false,
@@ -1480,7 +1480,7 @@ const App = (() => {
       if (typeof j.fracImproper === 'boolean') S.fracImproper = j.fracImproper;
       if (typeof j.cmplxPolar === 'boolean') S.cmplxPolar = j.cmplxPolar;
       if (typeof j.freqOn === 'boolean') S.freqOn = j.freqOn;
-      if (typeof j.contrast === 'number') S.contrast = j.contrast;
+      if (typeof j.contrast === 'number' && j.contrast !== 10) S.contrast = j.contrast;   // 舊預設 10 遷移做最深
       if ([2, 8, 10, 16].includes(j.base)) S.base = j.base;
       if (j.mem) for (const k in S.mem) { if (typeof j.mem[k] === 'number') S.mem[k] = j.mem[k]; }
       if (j.fvars) S.fvars = j.fvars;
