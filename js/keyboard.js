@@ -223,7 +223,7 @@ const App = (() => {
       };
       if (m.kind === 'clrconf' || m.plain) {
         opts.bottomText = m.lines[m.page][1]; opts.bottomIsText = true;
-      } else if (m.kind === 'setup' && m.page === 5) {
+      } else if (m.kind === 'contrast') {
         opts.bottomText = 'CASIO'; opts.bottomBigCentre = true;
         opts.scrollL = false; opts.scrollR = false;
       } else {
@@ -367,7 +367,7 @@ const App = (() => {
         menuLines(['ab/c', 'd/c']),
         menuLines(['a+bi', 'r∠θ']),
         menuLines(['FreqOn', 'FreqOff']),
-        ['◂LIGHT     DARK▸', ''],
+        menuLines(['Contrast']),
       ],
     };
   }
@@ -446,7 +446,7 @@ const App = (() => {
       openModeMenu(); return;
     }
     if (id === 'rep_l' || id === 'rep_r') {
-      if (m.kind === 'setup' && m.page === 5) {   // Contrast 畫面:◄► 調對比
+      if (m.kind === 'contrast') {   // Contrast 調節畫面:◄► 調深淺
         S.contrast = Math.max(0, Math.min(20, S.contrast + (id === 'rep_r' ? 1 : -1)));
         LCD.setContrast(S.contrast);
         return;
@@ -489,6 +489,9 @@ const App = (() => {
       else if (m.page === 4) {
         if (digit === 1) { S.freqOn = true; Stat.clear(); exitMenu(); }
         else if (digit === 2) { S.freqOn = false; Stat.clear(); exitMenu(); }
+      }
+      else if (m.page === 5) {   // 撳 1 先入 Contrast 調節畫面(手冊 E-6)
+        if (digit === 1) S.menu = { kind: 'contrast', page: 0, lines: [['◂LIGHT     DARK▸', '']] };
       }
       return;
     }
