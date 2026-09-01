@@ -55,7 +55,7 @@ const KEY_DEFS = [
   ['dot',24.7, 87.7, 15.8, 7, 'k-dark k-num', '·', '<span class="c-shift">Ran#</span>'],
   ['expk',43.7,87.7, 15.8, 7, 'k-dark k-num', 'EXP', '<span class="c-shift">π</span>'],
   ['ans',62.6, 87.7, 15.8, 7, 'k-dark k-num', 'Ans', '<span class="c-shift">DRG▸</span>'],
-  ['exe',81.6, 87.7, 15.8, 7, 'k-dark k-num', 'EXE', ''],
+  ['exe',81.6, 87.7, 15.8, 7, 'k-dark k-num', 'EXE', '<span class="c-shift">Re⇔Im</span>'],
 ];
 
 /* ---- App 狀態 ---- */
@@ -547,9 +547,16 @@ const App = (() => {
         if (F.numBuf.length >= 2) {
           const no = parseInt(F.numBuf, 10);
           if (no >= 1 && no <= 23) {
-            // 輸入兩位數後直接跳入變數輸入畫面(用戶實機核實)
-            F.idx = no - 1; F.mode = 'var'; F.vi = 0;
-            S.tokens = []; S.cursor = 0;
+            // 兩位數選定 → 短暫顯示公式名(~半秒)再自動跳入變數輸入(用戶實機核實)
+            F.idx = no - 1; F.mode = 'browse';
+            const cur = F;
+            setTimeout(() => {
+              if (S.phase === 'fmla' && S.fmla === cur && cur.mode === 'browse') {
+                cur.mode = 'var'; cur.vi = 0;
+                S.tokens = []; S.cursor = 0;
+                render();
+              }
+            }, 500);
           }
           F.numBuf = '';
         }
@@ -726,8 +733,8 @@ const App = (() => {
         delTok();
         break;
       case 'exe':
-        if (shift) {   // Re⇔Im(手冊 E-34)
-          if (S.phase === 'result' && Engine.isCplx(S.result)) S.showIm = !S.showIm;
+        if (shift) {   // Re⇔Im:CMPLX 模式功能(手冊 E-34)
+          if (S.mode === 'CMPLX' && S.phase === 'result' && Engine.isCplx(S.result)) S.showIm = !S.showIm;
           break;
         }
         doExe(); break;
