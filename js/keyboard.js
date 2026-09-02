@@ -874,11 +874,18 @@ const App = (() => {
     if (S.mode !== 'PRGM') { S.menu = null; S.phase = 'input'; }
   }
   function peditKey(id, shift, alpha) {
+    // RCL / STO 之後直接撳變數鍵(A B C D X Y M)入變數,唔使 ALPHA(真機行為)
+    if (S.pePending) {
+      S.pePending = null;
+      const v = VAR_KEYS[id];
+      if (v && !shift && !alpha) { insertTok(T.variable(v)); return true; }
+    }
     if (id === 'exe' && !shift) { insertTok(T.cmd(':')); return true; }
     if (id === 'ac' || (id === 'prog' && shift) || id === 'on') { peditExit(); return true; }
     if (id === 'prog' || (id === 'd3' && shift)) { openPcmdMenu(); return true; }
     if (id === 'rcl') {
-      if (shift) { insertTok(T.sto()); return true; }   // STO → 入 → 符號
+      if (shift) insertTok(T.sto());   // STO:入 → 符號,跟住直接撳字母
+      S.pePending = 'v';
       return true;
     }
     if (id === 'mplus' && !alpha) {
