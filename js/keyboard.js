@@ -499,13 +499,14 @@ const App = (() => {
     if (m.kind === 'scidig') { S.setup = { mode:'sci', digits: digit === 0 ? 10 : digit, norm: S.setup.norm }; exitMenu(); return; }
     if (m.kind === 'normdig') { if (digit === 1 || digit === 2) { S.setup = { mode:'norm', norm: digit, digits: 0 }; exitMenu(); } return; }
     if (m.kind === 'clr') {
+      // 揀完顯示指令名(真機款,教學片核實:ClrSetup),EXE 執行,AC 取消
       if (digit === 1) {
         S.menu = m.statVariant
-          ? { kind:'clrconf', what:'stat', page:0, lines:[['Clr Stat?', '[EXE]:Yes [AC]:No']] }
-          : { kind:'clrconf', what:'mem', page:0, lines:[['Clr Memory?', '[EXE]:Yes [AC]:No']] };
+          ? { kind:'clrconf', what:'stat', page:0, lines:[[' ClrStat', '']] }
+          : { kind:'clrconf', what:'mem', page:0, lines:[[' ClrMemory', '']] };
       }
-      else if (digit === 2) S.menu = { kind:'clrconf', what:'setup', page:0, lines:[['Clr Setup?', '[EXE]:Yes [AC]:No']] };
-      else if (digit === 3) S.menu = { kind:'clrconf', what:'all', page:0, lines:[['Reset All?', '[EXE]:Yes [AC]:No']] };
+      else if (digit === 2) S.menu = { kind:'clrconf', what:'setup', page:0, lines:[[' ClrSetup', '']] };
+      else if (digit === 3) S.menu = { kind:'clrconf', what:'all', page:0, lines:[[' ClrAll', '']] };
       return;
     }
     if (m.kind === 'drg') {
