@@ -1040,12 +1040,18 @@ const App = (() => {
       LCD.draw({ topText: '', cursorPos: null, bottomText: f.text, expo: f.expo, indicators: ind });
       return;
     }
-    // prompt:顯示「A?」,輸入替換
+    // prompt:上行「A?」(輸入時替換),下行顯示該變數而家嘅值(教學片核實)
     const top = S.tokens.length ? lineText(S.tokens) : w.varName + '?';
+    let bottom = '', expo = '';
+    try {
+      const cur = S.mem[w.varName] !== undefined ? S.mem[w.varName] : 0;
+      const f = Engine.format(Engine.isCplx(cur) ? cur.re : cur, S.setup, {});
+      bottom = f.text; expo = f.expo;
+    } catch (e) {}
     LCD.draw({
       topText: top.substring(0, 16),
       cursorPos: Math.min(15, top.length),
-      bottomText: '', expo: '', indicators: indicators(),
+      bottomText: bottom, expo, indicators: indicators(),
     });
   }
 
