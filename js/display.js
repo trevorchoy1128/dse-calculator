@@ -95,11 +95,11 @@ const LCD = (() => {
       ctx.fillRect(W - 24, 5, 9, 9);
     }
 
-    // 選單第二行:大字數字,按頂行欄位對齊(真機款)
+    // 選單第二行:大字數字,按頂行欄位對齊(真機款);字形略細留字距
     if (state.menuBottomCols !== undefined) {
       const s = state.menuBottomCols || '';
       for (let i = 0; i < Math.min(16, s.length); i++) {
-        if (s[i] !== ' ') drawChar(s[i], TOP.x + i * 6 * TOP.u, BOT.y, BOT.u);
+        if (s[i] !== ' ') drawChar(s[i], TOP.x + i * 6 * TOP.u + 2, BOT.y, 5.1);
       }
       return;
     }
