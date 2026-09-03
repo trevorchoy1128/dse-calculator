@@ -432,6 +432,7 @@ const App = (() => {
 
   function menuKey(id, shift) {
     const m = S.menu;
+    if (m.kind === 'msg') return;   // Data Clear! 訊息期間唔收鍵
     if (id === 'on') { exitMenu(); S.tokens = []; S.cursor = 0; return; }
     if (id === 'ac') { exitMenu(); return; }
     if (id === 'prog' && shift) { exitMenu(); return; }      // EXIT
@@ -646,6 +647,16 @@ const App = (() => {
         S.ans = 0; S.fvars = {};
       }
       if (m.what === 'all') { Stat.clear(); Prog.load('[null,null,null,null]'); }
+      // 短暫顯示 Data Clear! 再返正常畫面(教學片核實)
+      S.menu = { kind: 'msg', page: 0, lines: [[' Data Clear!', '']] };
+      setTimeout(() => {
+        if (S.phase === 'menu' && S.menu && S.menu.kind === 'msg') {
+          S.menu = null; S.phase = 'input';
+          S.tokens = []; S.cursor = 0; S.lastVal = 0;
+          render();
+        }
+      }, 1200);
+      return;
       if (m.what === 'setup' || m.what === 'all') {
         S.mode = 'COMP'; S.angle = 'D';
         S.setup = { mode:'norm', norm:1, digits:0 };
