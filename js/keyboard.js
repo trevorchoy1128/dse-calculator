@@ -846,6 +846,10 @@ const App = (() => {
     const bot = ' P-' + used.padEnd(6, ' ') + free.padStart(4, ' ');
     S.menu = { kind: 'parea', action, page: 0, lines: [[title, bot]], plain: true, returnPhase };
   }
+  function openProgPicker() {   // 機外撳 Prog:P1 P2 P3 P4 揀區畫面(手冊 E-64)
+    S.phase = 'menu';
+    S.menu = { kind: 'parea', action: 'run', page: 0, lines: [menuLines(['P1', 'P2', 'P3', 'P4'])] };
+  }
   function openRunModeMenu(areaIdx) {
     S.phase = 'menu';
     S.menu = {
@@ -1349,7 +1353,7 @@ const App = (() => {
         doExe(); break;
       case 'mode': shift ? openSetupMenu() : openModeMenu(); break;
       case 'prog':
-        if (!shift && S.phase !== 'off') openAreaMenu('run');   // Prog 鍵:揀程式區執行
+        if (!shift && S.phase !== 'off') openProgPicker();   // Prog 鍵:P1~P4 揀區執行
         break;
       case 'fmla': if (S.mode === 'COMP' && S.phase !== 'off') openFmla(); break;
 

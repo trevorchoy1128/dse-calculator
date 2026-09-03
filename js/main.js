@@ -77,6 +77,37 @@
 
   LCD.init(document.getElementById('lcd'));
   LCD.setContrast(App.state.contrast);
+
+  // 彩蛋:撳住太陽能板 → 冇光 → 螢幕逐漸變暗 → 熄機
+  const solar = document.getElementById('solar');
+  let solarTimer = null, solarLevel = 0;
+  function solarRelease() {
+    if (solarTimer) {
+      clearInterval(solarTimer);
+      solarTimer = null;
+      LCD.setContrast(App.state.contrast);   // 有返光,恢復
+    }
+  }
+  solar.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    if (App.state.phase === 'off' || solarTimer) return;
+    const start = App.state.contrast, t0 = Date.now();
+    solarTimer = setInterval(() => {
+      const lv = start * (1 - (Date.now() - t0) / 1800);   // 約 1.8 秒淡出
+      if (lv <= 0) {
+        clearInterval(solarTimer);
+        solarTimer = null;
+        App.state.phase = 'off';
+        App.render();
+        LCD.setContrast(App.state.contrast);
+      } else {
+        LCD.setContrast(lv);
+      }
+    }, 90);
+  });
+  solar.addEventListener('pointerup', solarRelease);
+  solar.addEventListener('pointerleave', solarRelease);
+  solar.addEventListener('pointercancel', solarRelease);
   fit();
   setTimeout(fit, 50);
   App.render();
