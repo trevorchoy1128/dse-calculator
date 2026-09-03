@@ -437,6 +437,7 @@ const App = (() => {
     if (id === 'ac') { exitMenu(); return; }
     if (id === 'prog' && shift) { exitMenu(); return; }      // EXIT
     if (id === 'prog' && m.kind === 'parea') { exitMenu(); return; }   // Prog 再撳一次退出(用戶實機核實)
+    if (id === 'prog' && m.kind === 'pcmd') { exitMenu(); return; }    // 編輯中:Prog 再撳一次離開指令選單
     if (id === 'mode') {
       if (shift) { openSetupMenu(); return; }
       if (m.kind === 'mode') {   // MODE 順序:1 2 3 → 4 5 6 → 退出(用戶實機核實)
