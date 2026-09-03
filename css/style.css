@@ -109,10 +109,10 @@ body {
 
 /* 教師模式按鈕 */
 #teachbtn {
-  position:absolute; left:6%; top:17%;
-  padding:0.45em 1.2em;
-  font-size:clamp(11px, 2vh, 20px);
-  min-width:44px; min-height:32px;
+  position:absolute; left:6%; top:19%;
+  padding:0.3em 0.85em;
+  font-size:clamp(9px, 1.55vh, 15px);
+  min-width:34px; min-height:24px;
   border:1px solid #9aa0a8; border-radius:1.2em;
   background:linear-gradient(180deg,#f2f3f5,#d8dbdf);
   color:#4a4d52; cursor:pointer; font-weight:700;
