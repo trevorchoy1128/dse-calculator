@@ -860,7 +860,7 @@ const App = (() => {
     S.phase = 'menu';
     const title = { edit: 'EDIT  Program', run: 'RUN  Program', del: 'DELETE Program' }[action];
     const free = String(Prog.bytesFree());
-    const bot = (' P- 1234' + ' '.repeat(16)).slice(0, 16 - free.length) + free;   // 真機款:P- 1234  680
+    const bot = (' P- 1 2 3 4' + ' '.repeat(16)).slice(0, 16 - free.length) + free;   // P- 1 2 3 4  680
     S.menu = { kind: 'parea', action, page: 0, lines: [[title, bot]], returnPhase };
   }
   function openProgPicker() {   // 機外撳 Prog:P1 P2 P3 P4 揀區畫面(手冊 E-64)
