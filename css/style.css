@@ -107,6 +107,33 @@ body {
 .c-purple { color:#c05dd6; }
 .c-plain { color:#3c3f44; }
 
+/* 教師模式按鈕 */
+#teachbtn {
+  position:absolute; left:7%; top:22%;
+  padding:0.2em 0.7em;
+  font-size:clamp(7px, 1.3vh, 13px);
+  border:1px solid #9aa0a8; border-radius:1em;
+  background:linear-gradient(180deg,#f2f3f5,#d8dbdf);
+  color:#4a4d52; cursor:pointer; font-weight:700;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);
+}
+#teachbtn.on {
+  background:linear-gradient(180deg,#ffd94d,#f0b429);
+  border-color:#c8901a; color:#4a3200;
+  box-shadow:0 0 6px rgba(240,180,41,.8);
+}
+/* 教師模式按鍵高亮 */
+.key.teach-flash, #replay .rp.teach-flash {
+  box-shadow:0 0 0 3px #ffe23c, 0 0 16px 5px rgba(255,220,50,.95) !important;
+  filter:brightness(1.4);
+  z-index:10;
+}
+#replay .rp.teach-flash {
+  background:radial-gradient(circle, rgba(255,226,60,.9) 0%, rgba(255,226,60,.25) 70%, transparent 100%);
+  border-radius:50%;
+  color:#000;
+}
+
 /* REPLAY 圓盤 */
 #replay {
   position:absolute; border-radius:50%;

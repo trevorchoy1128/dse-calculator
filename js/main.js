@@ -53,6 +53,22 @@
   }
   window.addEventListener('resize', fit);
 
+  // 教師模式:高亮每次按鍵俾學生睇
+  let teachMode = false;
+  const teachBtn = document.getElementById('teachbtn');
+  teachBtn.addEventListener('click', () => {
+    teachMode = !teachMode;
+    teachBtn.classList.toggle('on', teachMode);
+  });
+  function teachFlash(el) {
+    if (!teachMode || !el) return;
+    el.classList.remove('teach-flash');
+    void el.offsetWidth;   // 重啟動畫
+    el.classList.add('teach-flash');
+    clearTimeout(el._teachT);
+    el._teachT = setTimeout(() => el.classList.remove('teach-flash'), 1000);
+  }
+
   // 事件(pointerdown 反應快過 click)
   keysEl.addEventListener('pointerdown', e => {
     const t = e.target.closest('[data-key]');
@@ -60,6 +76,7 @@
     e.preventDefault();
     t.classList.add('pressed');
     setTimeout(() => t.classList.remove('pressed'), 120);
+    teachFlash(t);
     App.press(t.dataset.key);
   });
 
@@ -72,7 +89,11 @@
   };
   window.addEventListener('keydown', e => {
     const k = KEYMAP[e.key];
-    if (k) { e.preventDefault(); App.press(k); }
+    if (k) {
+      e.preventDefault();
+      teachFlash(document.querySelector('[data-key="' + k + '"]'));
+      App.press(k);
+    }
   });
 
   LCD.init(document.getElementById('lcd'));

@@ -2,7 +2,7 @@
 
 /* ---- 佈局(% 座標,相對 #keys 容器;依官方產品圖量度) ---- */
 const KEY_DEFS = [
-  ['shift', 5.8,  8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">SHIFT</span>'],
+  ['shift', 5.8,  8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-shift">SHIFT</span>'],
   ['alpha', 21.4, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-alpha">ALPHA</span>'],
   ['mode',  65.8, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">MODE</span><span class="c-shift">SETUP</span>'],
   ['on',    81.6, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">ON</span>'],
