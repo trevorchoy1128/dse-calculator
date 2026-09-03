@@ -286,6 +286,7 @@ const App = (() => {
     if (S.phase === 'result' || S.phase === 'error') {
       S.tokens = []; S.cursor = 0; S.phase = 'input';
       S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false; S.engExp = null;
+      S.progResult = null;
     }
   }
   function insertTok(tok) {
@@ -319,7 +320,11 @@ const App = (() => {
 
   /* ---- 執行 ---- */
   function doExe() {
-    if (S.phase === 'result') return;      // 結果畫面 EXE 無動作
+    if (S.phase === 'result') {
+      // 程式結果畫面再撳 EXE:由頭重新執行同一程式(用戶實機核實)
+      if (S.progResult != null) { const a = S.progResult; S.progResult = null; startProgram(a); }
+      return;
+    }
     if (!S.tokens.length) return;
     // 函數單獨輸入 + EXE → 自動補 Ans(手冊 E-20)
     if (S.tokens.length === 1 && S.tokens[0].t === 'pfunc') S.tokens.push(T.ans());
@@ -854,10 +859,9 @@ const App = (() => {
   function openAreaMenu(action, returnPhase) {   // action: 'edit'|'run'|'del'
     S.phase = 'menu';
     const title = { edit: 'EDIT  Program', run: 'RUN  Program', del: 'DELETE Program' }[action];
-    const used = Prog.areas().map((a, i) => a ? String(i + 1) : '').join('');
     const free = String(Prog.bytesFree());
-    const bot = ' P-' + used.padEnd(6, ' ') + free.padStart(4, ' ');
-    S.menu = { kind: 'parea', action, page: 0, lines: [[title, bot]], plain: true, returnPhase };
+    const bot = (' P- 1234' + ' '.repeat(16)).slice(0, 16 - free.length) + free;   // 真機款:P- 1234  680
+    S.menu = { kind: 'parea', action, page: 0, lines: [[title, bot]], returnPhase };
   }
   function openProgPicker() {   // 機外撳 Prog:P1 P2 P3 P4 揀區畫面(手冊 E-64)
     S.phase = 'menu';
@@ -867,7 +871,7 @@ const App = (() => {
     S.phase = 'menu';
     S.menu = {
       kind: 'prunmode', areaIdx, page: 0,
-      lines: [['MODE: COMP CMPLX', '      1    2'], ['MODE: BASE SD REG', '      3   4   5']],
+      lines: [['MODE:COMP CMPLX', '      1     2'], ['MODE:BASE SD REG', '      3   4  5']],
     };
   }
   function openPcmdMenu() {
@@ -898,7 +902,8 @@ const App = (() => {
       if (v && !shift && !alpha) { insertTok(T.variable(v)); return true; }
     }
     if (id === 'exe' && !shift) { insertTok(T.cmd(':')); return true; }
-    if (id === 'ac' || (id === 'prog' && shift) || id === 'on') { peditExit(); return true; }
+    if (id === 'on') { S.pe = null; return false; }   // ON:即刻儲存並離開(交返主 ON 處理)
+    if (id === 'ac' || (id === 'prog' && shift)) { peditExit(); return true; }
     if (id === 'prog' || (id === 'd3' && shift)) { openPcmdMenu(); return true; }
     if (id === 'rcl') {
       if (shift) insertTok(T.sto());   // STO:入 → 符號,跟住直接撳字母
@@ -981,6 +986,7 @@ const App = (() => {
         S.resultSuffix = '';
         S.tokens = []; S.cursor = 0;
         S.phase = 'result';
+        S.progResult = areaIdx;   // 結果畫面再撳 EXE 重新執行同一程式
         render();
       },
       onError(e, pos) {
@@ -1036,8 +1042,8 @@ const App = (() => {
       topText: text.substring(start, start + 16),
       cursorPos: cChar - start, cursorOver: S.insertOver,
       scrollL: start > 0, scrollR: text.length > start + 16,
-      bottomText: '', expo: '',
-      smallRight: String(S.tokens.length).padStart(3, '0'),
+      bottomText: String(S.tokens.length).padStart(3, '0'),   // byte 數右下大字(教學片核實)
+      expo: '',
       indicators: indicators(),
     });
   }
