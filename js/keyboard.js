@@ -4,8 +4,8 @@
 const KEY_DEFS = [
   ['shift', 5.8,  8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-shift">SHIFT</span>'],
   ['alpha', 21.4, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-alpha">ALPHA</span>'],
-  ['mode',  65.8, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">MODE</span><span class="c-shift">SETUP</span>'],
-  ['on',    81.6, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">ON</span>'],
+  ['mode',  68.1, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">MODE</span><span class="c-shift">SETUP</span>'],
+  ['on',    83.7, 8.4, 13.7, 5.4, 'k-grey k-pill', '', '<span class="c-plain">ON</span>'],
 
   ['prog', 5.8,  21, 13.7, 5.4, 'k-orange k-pill', 'Prog', '<span class="c-shift">EXIT</span>'],
   ['fmla', 21.4, 21, 13.7, 5.4, 'k-orange k-pill', 'FMLA', ''],
