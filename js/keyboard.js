@@ -1144,6 +1144,7 @@ const App = (() => {
     try {
       F.results = def.calc(v, S.angle);
       F.mode = 'result'; F.ri = 0;
+      F.dispAlt = null; F.altFrac = null; F.improper = false;
       S.ans = F.results[0][1]; S.lastVal = S.ans;
     } catch (e) {
       S.phase = 'error';
@@ -1213,8 +1214,25 @@ const App = (() => {
     }
     if (F.mode === 'result') {
       if (id === 'exe') {
+        F.dispAlt = null; F.altFrac = null; F.improper = false;
         if (F.ri + 1 < F.results.length) { F.ri++; S.ans = F.results[F.ri][1]; S.lastVal = S.ans; }
         else { F.mode = 'var'; F.vi = 0; S.tokens = []; S.cursor = 0; }   // EXE 重新由頭執行(手冊 E-57)
+        return;
+      }
+      if (id === 'abc') {   // 結果小數 ↔ 分數(同普通結果畫面一樣)
+        const val = F.results[F.ri][1];
+        if (shift) { F.improper = !F.improper; return; }
+        if (Engine.isFrac(val)) { F.dispAlt = F.dispAlt === 'dec' ? null : 'dec'; return; }
+        if (F.dispAlt === 'frac') { F.dispAlt = null; return; }
+        try {
+          const f = Engine.decimalToFrac(Engine.toNum(val));
+          if (f) { F.altFrac = f; F.dispAlt = 'frac'; }
+        } catch (e) {}
+        return;
+      }
+      if (id === 'dms') {   // 結果小數 ↔ 度分秒
+        F.dispAlt = F.dispAlt === 'dms' ? null : 'dms';
+        return;
       }
       return;
     }
@@ -1247,7 +1265,11 @@ const App = (() => {
     } else if (F.mode === 'result') {
       top = pad2(def.no) + ':' + def.name;
       prefix = F.results[F.ri][0] + '=';
-      const f = Engine.format(F.results[F.ri][1], S.setup, {});
+      let val = F.results[F.ri][1];
+      if (F.dispAlt === 'frac' && F.altFrac) val = F.altFrac;
+      else if (F.dispAlt === 'dms') { try { val = Engine.mkDms(Engine.toNum(val)); } catch (e) {} }
+      else if (F.dispAlt === 'dec') { try { val = Engine.toNum(val); } catch (e) {} }
+      const f = Engine.format(val, S.setup, { improper: S.fracImproper !== !!F.improper });
       bottom = f.text; expo = f.expo;
       F.lastRes = { name: F.results[F.ri][0], value: F.results[F.ri][1] };
     }
