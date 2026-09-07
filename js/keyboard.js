@@ -1221,7 +1221,18 @@ const App = (() => {
       }
       if (id === 'abc') {   // 結果小數 ↔ 分數(同普通結果畫面一樣)
         const val = F.results[F.ri][1];
-        if (shift) { F.improper = !F.improper; return; }
+        if (shift) {   // d/c:小數上直接撳 → 轉做假分數
+          if (!Engine.isFrac(val) && F.dispAlt !== 'frac') {
+            try {
+              const f = Engine.decimalToFrac(Engine.toNum(val));
+              if (!f) return;
+              F.altFrac = f; F.dispAlt = 'frac'; F.improper = true;
+            } catch (e) {}
+            return;
+          }
+          F.improper = !F.improper;
+          return;
+        }
         if (Engine.isFrac(val)) { F.dispAlt = F.dispAlt === 'dec' ? null : 'dec'; return; }
         if (F.dispAlt === 'frac') { F.dispAlt = null; return; }
         try {
@@ -1467,8 +1478,18 @@ const App = (() => {
 
       case 'neg': insertTok(T.neg()); break;
       case 'abc': {
-        if (shift) {   // d/c:帶分數 ↔ 假分數
-          if (S.phase === 'result') S.dispImproper = !S.dispImproper;
+        if (shift) {   // d/c:帶分數 ↔ 假分數;小數上直接撳 → 轉做假分數
+          if (S.phase === 'result') {
+            const v = S.result;
+            if (!Engine.isFrac(v) && S.dispAlt !== 'frac' && !Engine.isCplx(v)) {
+              try {
+                const f = Engine.decimalToFrac(Engine.toNum(v));
+                if (f) { S.altFracCache = f; S.dispAlt = 'frac'; S.dispImproper = !S.fracImproper; }
+              } catch (e) {}
+              break;
+            }
+            S.dispImproper = !S.dispImproper;
+          }
           break;
         }
         if (S.phase === 'result') { toggleFracDec(); break; }   // 小數 ↔ 分數
