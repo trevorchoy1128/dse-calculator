@@ -96,6 +96,15 @@
     }
   });
 
+  // 朋友版到期檢查(主版冇 expiry.js,唔受影響)
+  if (window.FRIEND_EXPIRY && Date.now() > new Date(window.FRIEND_EXPIRY).getTime()) {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,11,13,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#dfe2e6;font-size:20px;gap:12px;text-align:center;padding:24px;';
+    ov.innerHTML = '<div style="font-size:44px">⏳</div><div>呢個試用版已經到期</div><div style="font-size:14px;color:#8a8f96">如需繼續使用,請聯絡分享呢個網址俾你嘅朋友</div>';
+    document.body.appendChild(ov);
+    return;
+  }
+
   LCD.init(document.getElementById('lcd'));
   LCD.setContrast(App.state.contrast);
 
