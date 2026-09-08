@@ -118,18 +118,26 @@ const LCD = (() => {
 
     // 底行:右對齊大字;'.' 佔半闊字位,畫實心方塊(真機款)
     const b = state.bottomText || '';
-    const cw = 6 * BOT.u, dw = 3 * BOT.u;
-    let total = 0;
-    for (const ch of b) total += (ch === '.' ? dw : cw);
     const rightEdge = state.expo ? EXP.x - 10 : (state.baseLetter ? 474 : W - 26);
+    // 有變數前綴(x1= 等)時計可用闊度,唔夠位就縮細字形避免重疊
+    const leftLimit = state.bottomPrefix ? TOP.x + state.bottomPrefix.length * 18 + 18 : 16;
+    let u = BOT.u;
+    let total = 0;
+    for (const ch of b) total += (ch === '.' ? 3 * u : 6 * u);
+    if (total > rightEdge - leftLimit && total > 0) {
+      u = Math.max(4.2, u * (rightEdge - leftLimit) / total);
+      total = 0;
+      for (const ch of b) total += (ch === '.' ? 3 * u : 6 * u);
+    }
+    const cw = 6 * u, dw = 3 * u;
     let x = rightEdge - total;
     for (const ch of b) {
       if (ch === '.') {
         ctx.fillStyle = PIX;
-        ctx.fillRect(x + 0.6 * BOT.u, BOT.y + 5.4 * BOT.u, BOT.u * 1.6, BOT.u * 1.6);
+        ctx.fillRect(x + 0.6 * u, BOT.y + 5.4 * u, u * 1.6, u * 1.6);
         x += dw;
       } else {
-        drawChar(ch, x, BOT.y, BOT.u);
+        drawChar(ch, x, BOT.y, u);
         x += cw;
       }
     }
