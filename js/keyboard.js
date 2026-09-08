@@ -801,7 +801,7 @@ const App = (() => {
     const digit = { d0:'0',d1:'1',d2:'2',d3:'3',d4:'4',d5:'5',d6:'6',d7:'7',d8:'8',d9:'9' }[id];
     if (digit !== undefined && !shift) { S.tokens.push(T.d(digit)); return; }
     if (id === 'dot') { S.tokens.push(T.dot()); return; }
-    if (id === 'neg') { S.tokens.push(T.neg()); return; }
+    if (id === 'neg' || (id === 'sub' && !shift)) { S.tokens.push(T.neg()); return; }   // 減號都當負號
     if (id === 'expk' && !shift) { S.tokens.push(T.exp()); return; }
     if (id === 'del') { S.tokens.pop(); return; }
     if (id === 'exe') {
@@ -1191,7 +1191,7 @@ const App = (() => {
       const def = FMLA[F.idx], name = def.vars[F.vi];
       if (digit !== undefined && !shift) { S.tokens.push(T.d(String(digit))); S.cursor = S.tokens.length; return; }
       if (id === 'dot') { S.tokens.push(T.dot()); S.cursor = S.tokens.length; return; }
-      if (id === 'neg') { S.tokens.push(T.neg()); S.cursor = S.tokens.length; return; }
+      if (id === 'neg' || (id === 'sub' && !shift)) { S.tokens.push(T.neg()); S.cursor = S.tokens.length; return; }   // 減號都當負號
       if (id === 'expk') { S.tokens.push(shift ? T.pi() : T.exp()); S.cursor = S.tokens.length; return; }
       if (id === 'del') { S.tokens.pop(); S.cursor = S.tokens.length; return; }
       if (id === 'exe') {
