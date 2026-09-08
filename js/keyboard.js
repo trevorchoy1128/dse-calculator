@@ -1336,6 +1336,19 @@ const App = (() => {
     const shift = S.shift, alpha = S.alpha;
     S.shift = false; S.alpha = false;
 
+    // ON:任何狀態都直接返主畫面,右下歸 0.(用戶實機核實)
+    if (id === 'on') {
+      if (S.run) S.run.runner.abort();
+      S.phase = 'input'; S.tokens = []; S.cursor = 0; S.insertOver = false;
+      S.hypPending = 0; S.pending = null; S.menu = null;
+      S.history = []; S.histIdx = null;
+      S.lastVal = 0; S.progResult = null;
+      S.run = null; S.runWait = null; S.pe = null; S.fmla = null;
+      S.resultSuffix = ''; S.dispAlt = null; S.dispImproper = false; S.engExp = null;
+      if (S.mode === 'PRGM') S.mode = 'COMP';
+      render(); return;
+    }
+
     if (S.phase === 'menu') {
       if (id === 'exe') menuExe(); else menuKey(id, shift);
       render(); return;
