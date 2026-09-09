@@ -349,15 +349,21 @@ const Engine = (() => {
       leave();
       return v;
     }
+    function parseSignedPostfix() {   // 分數元素允許前置負號(1⌟−10 = −1⌟10,實機行為)
+      let negC = 0;
+      while (!atEnd() && (peek().t === 'neg' || (peek().t === 'op' && peek().d === '-'))) { next(); negC++; }
+      const v = parsePostfix();
+      return negC % 2 ? negv(v) : v;
+    }
     function parseFrac() {
       enter();
       let a = parsePostfix();
       if (!atEnd() && peek().t === 'frac') {
         next();
-        const b = parsePostfix();
+        const b = parseSignedPostfix();
         if (!atEnd() && peek().t === 'frac') {
           next();
-          const c = parsePostfix();
+          const c = parseSignedPostfix();
           a = buildFrac3(a, b, c);
         } else {
           a = buildFrac2(a, b);
