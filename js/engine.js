@@ -369,8 +369,7 @@ const Engine = (() => {
           while (!atEnd() && startsTight(peek())) r = mul(r, parseNprSeq());
           try { l = op === '×' ? mul(l, r) : div(l, r); }
           catch (e) { attach(e, opPos + 1); }   // 游標跳到出錯運算元(手冊 E-13)
-        } else if (!atEnd() && (startsFactor(peek()) ||
-                   ((peek().t === 'd' || peek().t === '.') && pos > 0 && tokens[pos - 1].t === 'rp'))) {   // (2)3 = 6
+        } else if (!atEnd() && startsFactor(peek())) {   // 括號後接數字唔係隱式乘法:(2)3 → Syntax ERROR(用戶實機核實)
           l = mul(l, parseNprSeq());   // 隱式乘法同 ×÷ 同級,左至右
         } else break;
       }
