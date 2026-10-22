@@ -444,9 +444,10 @@ const Engine = (() => {
     function parseNumber() {
       let s = '';
       while (!atEnd() && (peek().t === 'd' || peek().t === '.')) s += next().d;
-      if (s === '' || s === '.') throw SYN(pos);
+      const bareExp = s === '' && !atEnd() && peek().t === 'exp';   // 前面冇數字嘅 EXP:尾數當 1(×EXP3 = ×1ᴇ3)
+      if (!bareExp && (s === '' || s === '.')) throw SYN(pos);
       if ((s.match(/\./g) || []).length > 1) throw SYN(pos);
-      let v = parseFloat(s);
+      let v = bareExp ? 1 : parseFloat(s);
       if (!atEnd() && peek().t === 'exp') {
         next();
         let esign = 1, es = '';
@@ -487,7 +488,7 @@ const Engine = (() => {
       if (atEnd()) throw SYN(pos);
       const tk = peek();
       let v;
-      if (tk.t === 'd' || tk.t === '.') v = parseNumber();
+      if (tk.t === 'd' || tk.t === '.' || tk.t === 'exp') v = parseNumber();
       else if (tk.t === 'i') { next(); v = { re: 0, im: 1 }; }
       else if (tk.t === 'pi') { next(); v = PI; }
       else if (tk.t === 'econst') { next(); v = E_CONST; }
