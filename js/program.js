@@ -132,8 +132,11 @@ const Prog = (() => {
               stepVal = Engine.toNum(evalSeg(endAt + 1, stAt));
               bodyAt = stAt;
             }
-            scanLoopEnd(bodyAt, 'For', 'Next');
-            ctx.assign(varTk.name, Engine.toNum(start));
+            const nextAt = scanLoopEnd(bodyAt, 'For', 'Next');
+            const sv = Engine.toNum(start);
+            ctx.assign(varTk.name, sv);
+            // 起始值已經超過終點:成個迴圈唔行(用戶實機核實:For 5→A To 1 → 0 次)
+            if (stepVal >= 0 ? sv > endVal : sv < endVal) { pc = nextAt + 1; return 'cont'; }
             frames.push({ type: 'for', varName: varTk.name, end: endVal, step: stepVal, body: bodyAt });
             pc = bodyAt;
             return 'cont';
