@@ -5,7 +5,6 @@
 const Prog = (() => {
   const CAPACITY = 680;
   const SYN = () => new Engine.CalcError('Syntax ERROR');
-  const GOERR = () => new Engine.CalcError('Go ERROR');
 
   let areas = [null, null, null, null];   // {mode, tokens}
 
@@ -70,7 +69,7 @@ const Prog = (() => {
         else if (isCmd(t[i], close)) { if (depth === 0) return i; depth--; }
         i++;
       }
-      return i;
+      throw SYN();   // For 冇 Next / While 冇 WhileEnd → Syntax ERROR
     }
     function evalSeg(from, to) {
       if (to <= from) throw SYN();
@@ -95,7 +94,7 @@ const Prog = (() => {
           case 'Goto': {
             const n = t[pc + 1] ? t[pc + 1].d : '';
             const j = findLbl(n);
-            if (j < 0) throw GOERR();
+            if (j < 0) throw SYN();   // 搵唔到對應 Lbl → Syntax ERROR(手冊)
             pc = j; return 'cont';
           }
           case 'If': {
@@ -133,6 +132,7 @@ const Prog = (() => {
               stepVal = Engine.toNum(evalSeg(endAt + 1, stAt));
               bodyAt = stAt;
             }
+            scanLoopEnd(bodyAt, 'For', 'Next');
             ctx.assign(varTk.name, Engine.toNum(start));
             frames.push({ type: 'for', varName: varTk.name, end: endVal, step: stepVal, body: bodyAt });
             pc = bodyAt;
@@ -150,6 +150,7 @@ const Prog = (() => {
           }
           case 'While': {
             const { val, end } = evalCond(pc + 1);
+            scanLoopEnd(end, 'While', 'WhileEnd');
             if (toNumOr(val) !== 0) { frames.push({ type: 'while', at: pc }); pc = end; }
             else { pc = scanLoopEnd(end, 'While', 'WhileEnd') + 1; }
             return 'cont';

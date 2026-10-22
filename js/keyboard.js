@@ -189,7 +189,7 @@ const App = (() => {
     }
     if (S.engExp !== null && !Engine.isCplx(v)) {   // ENG 工程記數顯示
       const sig = S.setup.mode === 'sci' ? S.setup.digits : 10;   // 顯示最多 10 位(Sci n → n 位)
-      const x = Number(Engine.toNum(v).toPrecision(sig));
+      const x = Engine.roundSig(Engine.toNum(v), sig);
       const mant = Engine.r15(x / Math.pow(10, S.engExp));
       const et = (S.engExp < 0 ? '-' : '') + String(Math.abs(S.engExp)).padStart(2, '0');
       return { text: Engine.decText(mant), expo: et };
@@ -333,7 +333,7 @@ const App = (() => {
   }
   function runEval(suffix, after) {
     try {
-      const env = Object.assign({ angle: S.angle, mem: S.mem, ans: S.ans, setup: S.setup, base: S.base }, statEnvExtras());
+      const env = Object.assign({ angle: S.angle, mem: S.mem, ans: S.ans, setup: S.setup, base: S.base, fracImproper: S.fracImproper }, statEnvExtras());
       const v = S.mode === 'BASE' ? Engine.evaluateBase(S.tokens, env) : Engine.evaluate(S.tokens, env);
       S.ans = v;
       S.result = v; S.lastVal = v; S.resultSuffix = suffix || '';
@@ -810,7 +810,16 @@ const App = (() => {
     const digit = { d0:'0',d1:'1',d2:'2',d3:'3',d4:'4',d5:'5',d6:'6',d7:'7',d8:'8',d9:'9' }[id];
     if (digit !== undefined && !shift) { S.tokens.push(T.d(digit)); return; }
     if (id === 'dot') { S.tokens.push(T.dot()); return; }
-    if (id === 'neg' || (id === 'sub' && !shift)) { S.tokens.push(T.neg()); return; }   // 減號都當負號
+    if (id === 'neg') { S.tokens.push(T.neg()); return; }
+    if (id === 'sub' && !shift) {   // 開頭或運算子後當負號,否則係減號
+      const last = S.tokens[S.tokens.length - 1];
+      S.tokens.push(!last || last.t === 'op' || last.t === 'lp' ? T.neg() : T.op('-'));
+      return;
+    }
+    const opk = { add:'+', mul:'×', div:'÷' }[id];
+    if (opk && !shift) { S.tokens.push(T.op(opk)); return; }
+    if (id === 'lp' && !shift) { S.tokens.push(T.lp()); return; }
+    if (id === 'rp' && !shift) { S.tokens.push(T.rp()); return; }
     if (id === 'expk' && !shift) { S.tokens.push(T.exp()); return; }
     if (id === 'del') { S.tokens.pop(); return; }
     if (id === 'exe') {
@@ -1029,7 +1038,9 @@ const App = (() => {
     if (id === 'exe' && !shift) {
       if (!S.tokens.length) return true;
       try {
-        const v = S.run.runner && S.run ? Engine.evaluate(S.tokens, progRunEnv(S.run.prog)) : 0;
+        const v = !(S.run.runner && S.run) ? 0
+          : S.run.prog.mode === 'BASE' ? Engine.evaluateBase(S.tokens, progRunEnv(S.run.prog))
+          : Engine.evaluate(S.tokens, progRunEnv(S.run.prog));
         S.tokens = []; S.cursor = 0;
         S.runWait = null;
         S.run.runner.resumePrompt(v);
@@ -1311,12 +1322,16 @@ const App = (() => {
     }
     if (!shift && { sq:10, pow:16, log:2, ln:8 }[id] !== undefined) {
       S.base = { sq:10, pow:16, log:2, ln:8 }[id];
+      if (S.phase === 'result') {   // 結果超出新底數範圍(DEC 1000 → BIN)→ Math ERROR
+        try { Engine.formatBase(Engine.toNum(S.result), S.base); }
+        catch (e) { S.phase = 'error'; S.error = { name: 'Math ERROR', pos: S.tokens.length }; }
+      }
       return true;   // 結果畫面按此轉底顯示;輸入中轉輸入底
     }
     if (id === 'inv' && !shift) { openLogicMenu(); return true; }
     // BASE 不支援嘅鍵:小數點、EXP、分數、函數、nPr/nCr、DRG 等
     if (['dot', 'expk', 'abc', 'sqrt', 'cube', 'eng', 'comma'].includes(id)) return true;
-    if (shift && ['mul', 'div', 'ans', 'inv', 'log', 'ln', 'sq', 'pow', 'add', 'sub', 'lp', 'rp', 'd0', 'dot'].includes(id)) return true;
+    if (shift && ['mul', 'div', 'ans', 'inv', 'log', 'ln', 'sq', 'pow', 'add', 'sub', 'lp', 'rp', 'd0', 'dot', 'd7'].includes(id)) return true;   // d7 = CONST:BASE 唔用得
     return false;
   }
 

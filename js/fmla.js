@@ -7,7 +7,7 @@ const FMLA = (() => {
   const R_GAS = 8.314472;           // 氣體常數
   const ERR = () => new Engine.CalcError('Math ERROR');
   const r15 = Engine.r15;
-  const rad = (x, u) => u === 'R' ? x : u === 'G' ? x * PI / 200 : x * PI / 180;
+  const rad = (x, u) => u === 'R' ? x : u === 'G' ? x * Math.PI / 200 : x * Math.PI / 180;
 
   // Hastings 估算:標準常態分佈
   function P_of(x) {
@@ -40,7 +40,7 @@ const FMLA = (() => {
         const s = (v.a + v.b + v.c) / 2;
         return [['S', r15(Math.sqrt(s * (s - v.a) * (s - v.b) * (s - v.c)))]];
       } },
-    { no: 4, name: 'P(x)', vars: ['x'], calc: v => [['P', P_of(Math.abs(v.x))]] },
+    { no: 4, name: 'P(x)', vars: ['x'], calc: v => [['P', v.x < 0 ? r15(1 - P_of(-v.x)) : P_of(v.x)]] },
     { no: 5, name: 'Q(x)', vars: ['x'], calc: v => [['Q', r15(P_of(Math.abs(v.x)) - 0.5)]] },
     { no: 6, name: 'CoulombsLaw', vars: ['Q', 'q', 'r'],
       calc: v => {

@@ -21,6 +21,48 @@ const Engine = (() => {
     if (a < 1e-99) return 0;
     return parseFloat(x.toPrecision(15));
   }
+  // 十進制捨入(真機用 BCD,唔可以用二進制 toFixed/toPrecision:1.005 Fix2 → 1.01)
+  function decParts(x) {
+    const [m, e] = Math.abs(x).toExponential(14).split('e');
+    return { neg: x < 0, dg: m.replace('.', ''), e: +e };
+  }
+  function roundSig(x, sig) {
+    if (x === 0 || !isFinite(x) || sig >= 15) return x;
+    const { neg, dg, e } = decParts(x);
+    let k = BigInt(dg.slice(0, sig));
+    if (dg[sig] >= '5') k += 1n;
+    return Number((neg ? '-' : '') + k + 'e' + (e - sig + 1));
+  }
+  function roundFixed(x, d) {
+    if (x === 0 || !isFinite(x)) return x;
+    const { neg, dg, e } = decParts(x);
+    const sig = e + 1 + d;
+    if (sig < 0) return 0;
+    if (sig === 0) return dg[0] >= '5' ? (neg ? -1 : 1) * Number('1e' + (-d)) : 0;
+    return roundSig(x, Math.min(sig, 15));
+  }
+  // 顯示 10 位(連小數點前嘅 0 計埋:1÷3 → 0.333333333)
+  function round10(x) {
+    return Math.abs(x) < 1 ? roundFixed(x, 9) : roundSig(x, 10);
+  }
+  // 15 位十進制加減(避免二進制誤差:1÷3×3−1 = −1×10⁻¹⁵)
+  function decAdd(a, b) {
+    if (a === 0 || b === 0) return r15(a + b);
+    const pa = decParts(a), pb = decParts(b);
+    const ea = pa.e - 14, eb = pb.e - 14, e = Math.min(ea, eb);
+    if (Math.abs(ea - eb) > 20) return r15(a + b);
+    const ma = BigInt(pa.dg) * 10n ** BigInt(ea - e) * (pa.neg ? -1n : 1n);
+    const mb = BigInt(pb.dg) * 10n ** BigInt(eb - e) * (pb.neg ? -1n : 1n);
+    const sum = ma + mb;
+    if (sum === 0n) return 0;
+    const neg = sum < 0n, abs = (neg ? -sum : sum).toString();
+    let k, exp;
+    if (abs.length > 15) {
+      k = BigInt(abs.slice(0, 15)); if (abs[15] >= '5') k += 1n;
+      exp = e + abs.length - 15;
+    } else { k = BigInt(abs); exp = e; }
+    return r15(Number((neg ? '-' : '') + k + 'e' + exp));
+  }
   const isFrac = v => typeof v === 'object' && v !== null && v.d !== undefined;
   const isDms  = v => typeof v === 'object' && v !== null && v.dms === true;
   const isCplx = v => typeof v === 'object' && v !== null && v.im !== undefined;
@@ -61,9 +103,11 @@ const Engine = (() => {
     }
     return String(n).length + String(d).length + 1;
   }
+  let fracImproperPref = null;   // 目前 SETUP ab/c(false)或 d/c(true);null = 任一格式放得落就得
   function chkFrac(v) {
     if (!isFrac(v)) return v;
-    if (fracElems(v, false) > 10 && fracElems(v, true) > 10) return fracToNum(v);
+    if (fracImproperPref !== null) { if (fracElems(v, fracImproperPref) > 10) return fracToNum(v); }
+    else if (fracElems(v, false) > 10 && fracElems(v, true) > 10) return fracToNum(v);
     return v;
   }
   // 小數 → 分數(結果 ab/c 切換):連分數有理逼近
@@ -98,14 +142,14 @@ const Engine = (() => {
     if (isDms(a) || isDms(b)) return mkDms(r15(toNum(a) + toNum(b)));
     const fa = asFrac(a), fb = asFrac(b);
     if ((isFrac(a) || isFrac(b)) && fa && fb) return chkFrac(mkFrac(fa.n * fb.d + fb.n * fa.d, fa.d * fb.d));
-    return r15(toNum(a) + toNum(b));
+    return decAdd(toNum(a), toNum(b));
   }
   function sub(a, b) {
     if (isCplx(a) || isCplx(b)) return mkCplx(cRe(a) - cRe(b), cIm(a) - cIm(b));
     if (isDms(a) || isDms(b)) return mkDms(r15(toNum(a) - toNum(b)));
     const fa = asFrac(a), fb = asFrac(b);
     if ((isFrac(a) || isFrac(b)) && fa && fb) return chkFrac(mkFrac(fa.n * fb.d - fb.n * fa.d, fa.d * fb.d));
-    return r15(toNum(a) - toNum(b));
+    return decAdd(toNum(a), -toNum(b));
   }
   function mul(a, b) {
     if (isCplx(a) || isCplx(b)) {
@@ -200,13 +244,13 @@ const Engine = (() => {
   /* ---------- 角度 ---------- */
   function toRad(v, unit) {
     if (unit === 'R') return v;
-    if (unit === 'G') return v * PI / 200;
-    return v * PI / 180;
+    if (unit === 'G') return v * Math.PI / 200;   // 內部換算用全精度 π(sin30 = 0.5 準確)
+    return v * Math.PI / 180;
   }
   function fromRad(v, unit) {
     if (unit === 'R') return r15(v);
-    if (unit === 'G') return r15(v * 200 / PI);
-    return r15(v * 180 / PI);
+    if (unit === 'G') return r15(v * 200 / Math.PI);
+    return r15(v * 180 / Math.PI);
   }
   function trigRangeCheck(v, u) {
     const a = Math.abs(v);
@@ -266,13 +310,16 @@ const Engine = (() => {
      1 括號函數  2 後置(x² x³ x⁻¹ x! °'" ° ʳ ᵍ ^( ˣ√( %)  3 分數
      4 前綴負號  6 nPr nCr ∠  7 ×÷同隱式乘法(左至右)  8 +−         */
   function evaluate(tokens, env) {
-    let pos = 0, depth = 0;
+    let pos = 0, depth = 0, bdepth = 0;
+    fracImproperPref = typeof env.fracImproper === 'boolean' ? env.fracImproper : null;
 
     const peek = () => tokens[pos];
     const atEnd = () => pos >= tokens.length;
     const next = () => tokens[pos++];
 
-    function enter() { if (++depth > 24) throw STK(pos); }
+    function enter() { if (++depth > 400) throw STK(pos); }   // 遞迴保護
+    function openB() { if (++bdepth > 24) throw STK(pos); }   // 指令棧:括號/函數層數
+    function closeB() { bdepth--; }
     function leave() { depth--; }
 
     function startsFactor(tk) {
@@ -330,8 +377,8 @@ const Engine = (() => {
         const op = next().t;
         const r = parseNeg();
         if (op === 'ang') {   // r∠θ 極座標輸入(CMPLX)
-          const rr = toNum(l), th = toRad(toNum(r), env.angle);
-          l = mkCplx(rr * Math.cos(th), rr * Math.sin(th));
+          const rr = toNum(l), th = toNum(r);   // 用 cosU/sinU:2∠90 實部係準確 0
+          l = mkCplx(rr * cosU(th, env.angle), rr * sinU(th, env.angle));
         }
         else l = op === 'npr' ? nPr(l, r) : nCr(l, r);
       }
@@ -414,15 +461,15 @@ const Engine = (() => {
         else if (tk.t === 'fact') { next(); v = fact(v); }
         else if (tk.t === 'pct') { next(); v = r15(toNum(v) / 100); }
         else if (tk.t === 'powp') { // {m}^({n})
-          next();
-          const arg = parseExpr();
+          next(); openB();
+          const arg = parseExpr(); closeB();
           if (!atEnd() && peek().t === 'rp') next();
           else if (!atEnd()) throw SYN(pos);
           v = powv(v, arg);
         }
         else if (tk.t === 'xrootp') { // {m}ˣ√({n})
-          next();
-          const arg = parseExpr();
+          next(); openB();
+          const arg = parseExpr(); closeB();
           if (!atEnd() && peek().t === 'rp') next();
           else if (!atEnd()) throw SYN(pos);
           v = xroot(v, arg);
@@ -502,8 +549,8 @@ const Engine = (() => {
         v = env.statFn(tk.name);
       }
       else if (tk.t === 'lp') {
-        next();
-        v = parseExpr();
+        next(); openB();
+        v = parseExpr(); closeB();
         if (!atEnd() && peek().t === 'rp') next();
         else if (!atEnd()) throw SYN(pos);
       }
@@ -511,8 +558,10 @@ const Engine = (() => {
         const fPos = pos;
         next();
         const name = tk.name;
+        openB();
         const args = [parseExpr()];
         while (!atEnd() && peek().t === 'comma') { next(); args.push(parseExpr()); }
+        closeB();
         if (!atEnd() && peek().t === 'rp') next();
         else if (!atEnd()) throw SYN(pos);
         try { v = applyPfunc(name, args); }
@@ -571,6 +620,7 @@ const Engine = (() => {
         case 'Pol': {
           if (a.length !== 2) throw SYN(pos);
           if (a[0] === 0 && a[1] === 0) throw MATH();
+          if (Math.abs(a[0]) >= 1e50 || Math.abs(a[1]) >= 1e50) throw MATH();
           const r = r15(Math.hypot(a[0], a[1]));
           const th = fromRad(Math.atan2(a[1], a[0]), u);
           env.mem.X = r; env.mem.Y = th;
@@ -601,9 +651,9 @@ const Engine = (() => {
 
   /* ---------- 顯示格式化 ---------- */
   function roundDisp(x, setup) {
-    if (setup.mode === 'fix') return r15(parseFloat(x.toFixed(setup.digits)));
-    if (setup.mode === 'sci') return r15(parseFloat(x.toPrecision(Math.max(1, setup.digits))));
-    return r15(parseFloat(x.toPrecision(10)));
+    if (setup.mode === 'fix') return r15(roundFixed(x, fixDigits(x, setup.digits)));
+    if (setup.mode === 'sci') return r15(roundSig(x, Math.max(1, setup.digits)));
+    return r15(round10(x));
   }
 
   function dmsText(v) {
@@ -641,7 +691,7 @@ const Engine = (() => {
     }
     let x = v;
     if (x === 0) {
-      if (setup.mode === 'fix') return { text: (0).toFixed(setup.digits), expo: '' };
+      if (setup.mode === 'fix') return { text: fixMantissa((0).toFixed(setup.digits)), expo: '' };
       if (setup.mode === 'sci') return { text: fixMantissa((0).toPrecision(setup.digits === 0 ? 10 : setup.digits)), expo: '00' };
       return { text: '0.', expo: '' };
     }
@@ -649,8 +699,9 @@ const Engine = (() => {
 
     if (setup.mode === 'fix') {
       if (ax < 1e10) {
-        let t = x.toFixed(setup.digits);
-        if (t.replace(/[-.]/g, '').length <= 12) return { text: t, expo: '' };
+        const fd = fixDigits(x, setup.digits);
+        const y = roundFixed(x, fd);
+        if (Math.abs(y) < 1e10) return { text: fixMantissa(y.toFixed(fd)), expo: '' };
       }
       return sciForm(x, 10);
     }
@@ -658,9 +709,16 @@ const Engine = (() => {
 
     const lo = setup.norm === 2 ? 1e-9 : 1e-2;
     if (ax >= 1e10 || ax < lo) return sciForm(x, 10);
-    let y = parseFloat(x.toPrecision(10));
+    let y = round10(x);
+    if (y === 0) return sciForm(x, 10);
     if (Math.abs(y) >= 1e10) return sciForm(x, 10);
     return { text: decText(y), expo: '' };
+  }
+  // Fix n:顯示總共 10 位,整數部分佔用嘅位要減小數位(Fix9 100÷3 → 33.33333333)
+  function fixDigits(x, d) {
+    const ax = Math.abs(x);
+    const intDigits = ax < 1 ? 1 : Math.floor(Math.log10(ax)) + 1;
+    return Math.max(0, Math.min(d, 10 - intDigits));
   }
   function decText(y) {
     let s = y.toString();
@@ -672,9 +730,9 @@ const Engine = (() => {
   }
   function sciForm(x, sig, pad) {
     let e = Math.floor(Math.log10(Math.abs(x)));
-    let m = x / Math.pow(10, e);
-    m = parseFloat(m.toPrecision(sig));
-    if (Math.abs(m) >= 10) { m /= 10; e += 1; m = parseFloat(m.toPrecision(sig)); }
+    const xr = roundSig(x, sig);
+    e = decParts(xr).e;
+    let m = Number(decParts(xr).dg.slice(0, sig).replace(/^(\d)/, '$1.')) * (xr < 0 ? -1 : 1);
     // Sci 模式補足有效位數尾隨零(真機:2.000000000×10⁰⁰);Norm 唔補(5.×10⁻³)
     const mt = pad ? m.toPrecision(sig) : m.toString();
     // 指數兩位零墊(教學片:×10⁻⁰⁶)
@@ -737,8 +795,9 @@ const Engine = (() => {
     }
     function parseMulDiv() {
       let l = parseNegB();
-      while (!atEnd() && peek().t === 'op' && (peek().d === '×' || peek().d === '÷')) {
-        const op = next().d;
+      const implicit = tk => tk && ['lp', 'var', 'ans', 'pfunc', 'bpre'].includes(tk.t);   // 隱式乘法:2(3+1)
+      while (!atEnd() && ((peek().t === 'op' && (peek().d === '×' || peek().d === '÷')) || implicit(peek()))) {
+        const op = implicit(peek()) ? '×' : next().d;
         const r = parseNegB();
         if (op === '×') l = chk32(l * r);
         else { if (r === 0) throw MATH(); l = Math.trunc(l / r); }   // 小數部分捨去
@@ -759,7 +818,8 @@ const Engine = (() => {
       const v = parseInt(s, base);
       // 輸入值當成該底嘅位元圖案解釋(如 BIN 1111110101 = −11)
       const bits = BASE_BITS[base];
-      const wrap = v >= Math.pow(2, bits - 1) && v < Math.pow(2, bits) ? v - Math.pow(2, bits) : v;
+      if (base !== 10 && v >= Math.pow(2, bits)) throw MATH();   // BIN/OCT 超出位數(b11111111111)
+      const wrap = base !== 10 && v >= Math.pow(2, bits - 1) ? v - Math.pow(2, bits) : v;
       return chk32(wrap);
     }
     function parsePrimaryB() {
@@ -794,7 +854,7 @@ const Engine = (() => {
   return {
     evaluate, format, r15, isFrac, isDms, isCplx, mkCplx, cRe, cIm,
     toNum, mkDms, decimalToFrac, fracElems,
-    evaluateBase, formatBase, fromRad, decText,
+    evaluateBase, formatBase, fromRad, decText, roundSig, round10,
     CalcError, PI, E: E_CONST,
   };
 })();
