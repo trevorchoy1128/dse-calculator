@@ -188,7 +188,8 @@ const App = (() => {
       return { text: Engine.formatBase(Engine.toNum(v), S.base), expo: '' };
     }
     if (S.engExp !== null && !Engine.isCplx(v)) {   // ENG 工程記數顯示
-      const x = Engine.toNum(v);
+      const sig = S.setup.mode === 'sci' ? S.setup.digits : 10;   // 顯示最多 10 位(Sci n → n 位)
+      const x = Number(Engine.toNum(v).toPrecision(sig));
       const mant = Engine.r15(x / Math.pow(10, S.engExp));
       const et = (S.engExp < 0 ? '-' : '') + String(Math.abs(S.engExp)).padStart(2, '0');
       return { text: Engine.decText(mant), expo: et };
@@ -353,7 +354,7 @@ const App = (() => {
 
   /* ---- 選單 ---- */
   function openModeMenu() {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = {
       kind: 'mode', page: 0,
       lines: [
@@ -363,7 +364,7 @@ const App = (() => {
     };
   }
   function openSetupMenu() {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = {
       kind: 'setup', page: 0,
       lines: [
@@ -377,7 +378,7 @@ const App = (() => {
     };
   }
   function openClrMenu() {
-    S.phase = 'menu';
+    enterMenu();
     const stat = S.mode === 'SD' || S.mode === 'REG';
     S.menu = {
       kind: 'clr', page: 0, statVariant: stat,
@@ -385,7 +386,7 @@ const App = (() => {
     };
   }
   function openDrgMenu() {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = { kind: 'drg', page: 0, lines: [menuLines(['Deg', 'Rad', 'Gra'])], keepInput: true };
   }
   function openConstMenu() {   // CONST 十頁,每頁 4 個(手冊 E-24)
@@ -399,11 +400,11 @@ const App = (() => {
       }
       lines.push([top, bot]);
     }
-    S.phase = 'menu';
+    enterMenu();
     S.menu = { kind: 'constm', page: 0, lines };
   }
   function openLogicMenu() {   // BASE:LOGIC 三頁(手冊 E-54)
-    S.phase = 'menu';
+    enterMenu();
     S.menu = {
       kind: 'logic', page: 1,
       lines: [
@@ -413,9 +414,18 @@ const App = (() => {
       ],
     };
   }
+  function enterMenu() {
+    if (S.phase !== 'menu') S.menuFrom = S.phase;
+    S.phase = 'menu';
+  }
   function exitMenu() {
     S.phase = (S.menu && S.menu.returnPhase) || 'input';
     S.menu = null;
+  }
+  // 選單揀咗嘢要插入算式:由結果畫面開嘅選單 → 返結果狀態,等 insertTok/insertOp 開新算式或自動 Ans
+  function exitMenuForInsert() {
+    exitMenu();
+    if (S.menuFrom === 'result' && S.phase === 'input') S.phase = 'result';
   }
   // 通用選單行:項目喺 16 格內置中平均分佈,數字對齊項目中間下面
   function menuLines(items, startDigit) {
@@ -519,7 +529,7 @@ const App = (() => {
     if (m.kind === 'drg') {
       const u = { 1:'D', 2:'R', 3:'G' }[digit];
       if (u) {
-        exitMenu();
+        exitMenuForInsert();
         insertOp(T.aunit(u, { D:'°', R:'ʳ', G:'ᵍ' }[u]));
       }
       return;
@@ -538,7 +548,7 @@ const App = (() => {
         [['sx2y', 'Σx²y'], ['sx3', 'Σx³'], ['sx4', 'Σx⁴']],
       ];
       const it = pages[m.page] && pages[m.page][digit - 1];
-      if (it) { exitMenu(); insertTok(T.stat(it[0], it[1])); }
+      if (it) { exitMenuForInsert(); insertTok(T.stat(it[0], it[1])); }
       return;
     }
     if (m.kind === 'svarsd') {
@@ -547,7 +557,7 @@ const App = (() => {
         [['minX', 'minX'], ['maxX', 'maxX']],
       ];
       const it = pages[m.page] && pages[m.page][digit - 1];
-      if (it) { exitMenu(); insertTok(T.stat(it[0], it[1])); }
+      if (it) { exitMenuForInsert(); insertTok(T.stat(it[0], it[1])); }
       return;
     }
     if (m.kind === 'svarreg') {
@@ -566,7 +576,7 @@ const App = (() => {
       ];
       const it = pages[m.page] && pages[m.page][digit - 1];
       if (it) {
-        exitMenu();
+        exitMenuForInsert();
         if (it[0].startsWith('xhat') || it[0] === 'yhat') insertOp(T.stpost(it[0], it[1]));
         else insertTok(T.stat(it[0], it[1]));
       }
@@ -578,7 +588,7 @@ const App = (() => {
         [['minY', 'minY'], ['maxY', 'maxY']],
       ];
       const it = pages[m.page] && pages[m.page][digit - 1];
-      if (it) { exitMenu(); insertTok(T.stat(it[0], it[1])); }
+      if (it) { exitMenuForInsert(); insertTok(T.stat(it[0], it[1])); }
       return;
     }
     if (m.kind === 'prgm') {
@@ -624,7 +634,7 @@ const App = (() => {
     if (m.kind === 'constm') {
       if (digit >= 1 && digit <= 4) {
         const c = CONSTS[m.page * 4 + (digit - 1)];
-        exitMenu();
+        exitMenuForInsert();
         insertTok({ t: 'const', d: c[0], value: c[1] });
       }
       return;
@@ -632,14 +642,14 @@ const App = (() => {
     if (m.kind === 'logic') {
       if (m.page === 0) {
         const p = { 1:'d', 2:'h', 3:'b', 4:'o' }[digit];
-        if (p) { exitMenu(); insertTok(T.bpre(p)); }
+        if (p) { exitMenuForInsert(); insertTok(T.bpre(p)); }
       } else if (m.page === 1) {
         const op = { 1:'and', 2:'or', 3:'xnor' }[digit];
-        if (op) { exitMenu(); insertOp(T.logicop(op)); }
+        if (op) { exitMenuForInsert(); insertOp(T.logicop(op)); }
       } else {
-        if (digit === 1) { exitMenu(); insertOp(T.logicop('xor')); }
-        else if (digit === 2) { exitMenu(); insertTok(T.pfunc('Not', 'Not(')); }
-        else if (digit === 3) { exitMenu(); insertTok(T.pfunc('Neg', 'Neg(')); }
+        if (digit === 1) { exitMenuForInsert(); insertOp(T.logicop('xor')); }
+        else if (digit === 2) { exitMenuForInsert(); insertTok(T.pfunc('Not', 'Not(')); }
+        else if (digit === 3) { exitMenuForInsert(); insertTok(T.pfunc('Neg', 'Neg(')); }
       }
       return;
     }
@@ -653,6 +663,12 @@ const App = (() => {
         S.ans = 0; S.fvars = {};
       }
       if (m.what === 'all') { Stat.clear(); Prog.load('[null,null,null,null]'); }
+      if (m.what === 'setup' || m.what === 'all') {
+        S.mode = 'COMP'; S.angle = 'D';
+        S.setup = { mode:'norm', norm:1, digits:0 };
+        S.fracImproper = false; S.cmplxPolar = false; S.freqOn = true;
+      }
+      if (m.what === 'all') { S.history = []; S.tokens = []; S.cursor = 0; }
       // 短暫顯示 Data Clear! 再返正常畫面(教學片核實)
       S.menu = { kind: 'msg', page: 0, lines: [[' Data Clear!', '']] };
       setTimeout(() => {
@@ -663,13 +679,6 @@ const App = (() => {
         }
       }, 1200);
       return;
-      if (m.what === 'setup' || m.what === 'all') {
-        S.mode = 'COMP'; S.angle = 'D';
-        S.setup = { mode:'norm', norm:1, digits:0 };
-        S.fracImproper = false; S.cmplxPolar = false; S.freqOn = true;
-      }
-      if (m.what === 'all') { S.history = []; S.tokens = []; S.cursor = 0; }
-      exitMenu();
     }
   }
 
@@ -681,21 +690,21 @@ const App = (() => {
     return {};
   }
   function openRegTypeMenu(returnPhase) {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = {
       kind: 'regtype', page: 0, returnPhase,
       lines: [menuLines(['Lin', 'Log', 'Exp', 'Pwr']), menuLines(['Inv', 'Quad', 'AB-Exp'])],
     };
   }
   function openSSumMenu() {
-    S.phase = 'menu';
+    enterMenu();
     const lines = S.mode === 'SD'
       ? [menuLines(['Σx²', 'Σx', 'n'])]
       : [menuLines(['Σx²', 'Σx', 'n']), menuLines(['Σy²', 'Σy', 'Σxy']), menuLines(['Σx²y', 'Σx³', 'Σx⁴'])];
     S.menu = { kind: 'ssum', page: 0, lines };
   }
   function openSVarMenu() {
-    S.phase = 'menu';
+    enterMenu();
     if (S.mode === 'SD') {
       S.menu = { kind: 'svarsd', page: 0, lines: [menuLines(['', 'xσn', 'xσn-1']), menuLines(['minX', 'maxX'])] };
     } else {
@@ -703,7 +712,7 @@ const App = (() => {
     }
   }
   function openRegVarMenu() {
-    S.phase = 'menu';
+    enterMenu();
     const quad = Stat.getType() === 'Quad';
     S.menu = {
       kind: 'rvar', page: 0,
@@ -716,7 +725,7 @@ const App = (() => {
     };
   }
   function openMinMaxMenu() {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = { kind: 'minmax', page: 0, lines: [menuLines(['minX', 'maxX']), menuLines(['minY', 'maxY'])] };
   }
   // 頂層(唔入括號)分割 x , y ; f
@@ -853,29 +862,29 @@ const App = (() => {
     [['DT', T.cmd.bind(null, 'DT')], [';', T.semi]],
   ];
   function openPrgmMenu() {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = { kind: 'prgm', page: 0, lines: [menuLines(['EDIT', 'RUN', 'DEL'])] };
   }
   function openAreaMenu(action, returnPhase) {   // action: 'edit'|'run'|'del'
-    S.phase = 'menu';
+    enterMenu();
     const title = { edit: 'EDIT  Program', run: 'RUN  Program', del: 'DELETE Program' }[action];
     const free = String(Prog.bytesFree());
     const bot = (' P - 1234' + ' '.repeat(16)).slice(0, 16 - free.length) + free;   // P - 1234    680
     S.menu = { kind: 'parea', action, page: 0, lines: [[title, bot]], returnPhase };
   }
   function openProgPicker() {   // 機外撳 Prog:P1 P2 P3 P4 揀區畫面(手冊 E-64)
-    S.phase = 'menu';
+    enterMenu();
     S.menu = { kind: 'parea', action: 'run', page: 0, lines: [menuLines(['P1', 'P2', 'P3', 'P4'])] };
   }
   function openRunModeMenu(areaIdx) {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = {
       kind: 'prunmode', areaIdx, page: 0,
       lines: [['MODE:COMP CMPLX', '      1     2'], ['MODE:BASE SD REG', '      3   4  5']],
     };
   }
   function openPcmdMenu() {
-    S.phase = 'menu';
+    enterMenu();
     S.menu = {
       kind: 'pcmd', page: 0, returnPhase: 'pedit',
       lines: PCMD_PAGES.map(pg => menuLines(pg.map(x => x[0]))),
@@ -1357,6 +1366,9 @@ const App = (() => {
     if (S.phase === 'statv') { statViewKey(id, shift); render(); return; }
     if (S.phase === 'pedit') { if (peditKey(id, shift, alpha)) { render(); return; } }
     if (S.phase === 'prun') { if (runKey(id, shift, alpha)) { render(); return; } }
+    // STO/RCL 待決要先處理:BASE 嘅 A~D、SD/REG 嘅 M+ 喺度係變數鍵
+    if (S.pending && handlePending(id)) { render(); return; }
+    S.pending = null;
     if (S.mode === 'BASE' && baseKey(id, shift, alpha)) { render(); return; }
     if (S.mode === 'CMPLX' && cmplxKey(id, shift, alpha)) { render(); return; }
     // SD / REG 專用鍵
@@ -1378,8 +1390,6 @@ const App = (() => {
       }
     }
 
-    if (S.pending && handlePending(id)) { render(); return; }
-    S.pending = null;
 
     // hyp 待決:hyp→sinh(,SHIFT hyp→sinh⁻¹((手冊 E-28)
     if (S.hypPending && ['sin','cos','tan'].includes(id)) {
