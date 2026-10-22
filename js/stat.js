@@ -66,8 +66,8 @@ const Stat = (() => {
       case 'Exp': case 'Pwr': a = Math.exp(icept); b = slope; break;
       case 'AB': a = Math.exp(icept); b = Math.exp(slope); break;
     }
-    if (!isFinite(r)) throw ERR();
-    return { a: r15(a), b: r15(b), r: r15(r) };
+    // 只有 r 要除 Syy:y 全部相同時 a、b 照計,r 先 Math ERROR
+    return { a: r15(a), b: r15(b), get r() { if (!isFinite(r)) throw ERR(); return r15(r); } };
   }
   function coeffQuad() {
     const { n, sx, sx2, sx3, sx4, sy, sxy, sx2y } = rawSums();
@@ -86,6 +86,15 @@ const Stat = (() => {
   }
   function coeff() { return regType === 'Quad' ? coeffQuad() : coeffLinear(); }
 
+  // Σf(x−x̄)²:用離均差計,大數據唔會因 Σx²/n − x̄² 相減而失準
+  function devSq(k) {
+    let n = 0, sum = 0;
+    for (const d of data) { n += d.f; sum += d.f * d[k]; }
+    const m = sum / n;
+    let ss = 0;
+    for (const d of data) ss += d.f * (d[k] - m) * (d[k] - m);
+    return ss;
+  }
   // 統計命令(S-SUM / S-VAR token)
   function statFn(name) {
     const s = rawSums();
@@ -101,19 +110,11 @@ const Stat = (() => {
       case 'sx3': return r15(s.sx3);
       case 'sx4': return r15(s.sx4);
       case 'xbar': need(); return r15(s.sx / s.n);
-      case 'xsn': need(); return r15(Math.sqrt(Math.max(0, s.sx2 / s.n - Math.pow(s.sx / s.n, 2))));
-      case 'xsn1': {
-        if (s.n < 2) throw ERR();
-        const m = s.sx / s.n;
-        return r15(Math.sqrt(Math.max(0, (s.sx2 - s.n * m * m) / (s.n - 1))));
-      }
+      case 'xsn': need(); return r15(Math.sqrt(devSq('x') / s.n));
+      case 'xsn1': if (s.n < 2) throw ERR(); return r15(Math.sqrt(devSq('x') / (s.n - 1)));
       case 'ybar': need(); return r15(s.sy / s.n);
-      case 'ysn': need(); return r15(Math.sqrt(Math.max(0, s.sy2 / s.n - Math.pow(s.sy / s.n, 2))));
-      case 'ysn1': {
-        if (s.n < 2) throw ERR();
-        const m = s.sy / s.n;
-        return r15(Math.sqrt(Math.max(0, (s.sy2 - s.n * m * m) / (s.n - 1))));
-      }
+      case 'ysn': need(); return r15(Math.sqrt(devSq('y') / s.n));
+      case 'ysn1': if (s.n < 2) throw ERR(); return r15(Math.sqrt(devSq('y') / (s.n - 1)));
       case 'ra': return coeff().a;
       case 'rb': return coeff().b;
       case 'rc': { if (regType !== 'Quad') throw ERR(); return coeff().c; }
