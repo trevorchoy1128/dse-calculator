@@ -1316,7 +1316,7 @@ const App = (() => {
     if (S.phase === 'menu' || S.phase === 'off') return false;
     const HEXL = { neg:'A', dms:'B', hyp:'C', sin:'D', cos:'E', tan:'F' };
     if (!shift && !alpha && HEXL[id]) {
-      if (id === 'neg' && S.base !== 16) return false;   // 非 HEX 之下 (−) 照舊做負號
+      // (−) 喺 BASE 一律係 A:DEC/BIN/OCT 下 EXE 會 Syntax ERROR(用戶實機核實)
       insertTok(T.hexd(HEXL[id]));
       return true;
     }
@@ -1372,6 +1372,11 @@ const App = (() => {
       if (S.mode === 'PRGM') S.mode = 'COMP';
       render(); return;
     }
+
+    // 出錯畫面:只接受 AC 同 ◄►(用戶實機核實)
+    if (S.phase === 'error' && !['ac', 'rep_l', 'rep_r'].includes(id)) { render(); return; }
+    // 冇 SHIFT 功能嘅鍵:SHIFT 再撳冇反應(用戶實機核實:SHIFT 5 無嘢)
+    if (shift && ['d4', 'd5', 'd6', 'd8', 'sqrt', 'fmla'].includes(id)) { render(); return; }
 
     if (S.phase === 'menu') {
       if (id === 'exe') menuExe(); else menuKey(id, shift);
@@ -1580,13 +1585,14 @@ const App = (() => {
       for (const k in S.mem) {
         const v = S.mem[k];
         let n = 0;
-        try { n = Engine.isCplx(v) ? v.re : Engine.toNum(v); } catch (e) {}
+        try { n = Engine.isCplx(v) ? { re: v.re, im: v.im } : Engine.toNum(v); } catch (e) {}   // CMPLX 變數存成複數
         plainMem[k] = n;
       }
       localStorage.setItem('fx50fhii', JSON.stringify({
         mode: S.mode, angle: S.angle, setup: S.setup, fracImproper: S.fracImproper,
         cmplxPolar: S.cmplxPolar, freqOn: S.freqOn, contrast: S.contrast, base: S.base,
         mem: plainMem, fvars: S.fvars, progs: Prog.serialize(), regType: Stat.getType(),
+        stat: Stat.items(),   // 統計數據熄機後保留(用戶實機核實)
       }));
     } catch (e) {}
   }
@@ -1602,7 +1608,15 @@ const App = (() => {
       if (typeof j.freqOn === 'boolean') S.freqOn = j.freqOn;
       if (typeof j.contrast === 'number' && j.contrast !== 10) S.contrast = j.contrast;   // 舊預設 10 遷移做最深
       if ([2, 8, 10, 16].includes(j.base)) S.base = j.base;
-      if (j.mem) for (const k in S.mem) { if (typeof j.mem[k] === 'number') S.mem[k] = j.mem[k]; }
+      if (j.mem) for (const k in S.mem) {
+        const v = j.mem[k];
+        if (typeof v === 'number') S.mem[k] = v;
+        else if (v && typeof v.re === 'number' && typeof v.im === 'number') S.mem[k] = Engine.mkCplx(v.re, v.im);
+      }
+      if (Array.isArray(j.stat)) {
+        Stat.clear();
+        for (const d of j.stat) if (d && typeof d.x === 'number') Stat.push(d.x, d.y, d.f);
+      }
       if (j.fvars) S.fvars = j.fvars;
       if (j.progs) Prog.load(j.progs);
       if (['Lin', 'Log', 'Exp', 'Pwr', 'Inv', 'Quad', 'AB'].includes(j.regType)) Stat.setType(j.regType);

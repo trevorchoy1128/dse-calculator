@@ -327,6 +327,10 @@ const Engine = (() => {
       return ['pi', 'econst', 'var', 'ans', 'ran', 'lp', 'pfunc', 'i', 'const'].includes(tk.t);
     }
 
+    function startsTight(tk) {
+      return ['pi', 'econst', 'var', 'ans', 'ran', 'pfunc', 'i', 'const'].includes(tk.t);
+    }
+
     function parseExpr() {
       enter();
       let l = parseAddSub();
@@ -360,10 +364,13 @@ const Engine = (() => {
         if (!atEnd() && peek().t === 'op' && (peek().d === '×' || peek().d === '÷')) {
           const opPos = pos;
           const op = next().d;
-          const r = parseNprSeq();
+          let r = parseNprSeq();
+          // π、e、變數、A 類函數前嘅隱式乘法優先過 ×÷:1÷2π = 1÷(2π)(用戶實機核實)
+          while (!atEnd() && startsTight(peek())) r = mul(r, parseNprSeq());
           try { l = op === '×' ? mul(l, r) : div(l, r); }
           catch (e) { attach(e, opPos + 1); }   // 游標跳到出錯運算元(手冊 E-13)
-        } else if (!atEnd() && startsFactor(peek())) {
+        } else if (!atEnd() && (startsFactor(peek()) ||
+                   ((peek().t === 'd' || peek().t === '.') && pos > 0 && tokens[pos - 1].t === 'rp'))) {   // (2)3 = 6
           l = mul(l, parseNprSeq());   // 隱式乘法同 ×÷ 同級,左至右
         } else break;
       }
