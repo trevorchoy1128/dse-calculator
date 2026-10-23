@@ -1480,8 +1480,11 @@ const App = (() => {
         break;
       }
       case 'rep_u': case 'rep_d': {
+        if (S.phase === 'input' && S.tokens.length && S.histIdx === null) {   // 輸入中:▲ 游標去頭、▼ 去尾(用戶實機核實)
+          S.cursor = id === 'rep_u' ? 0 : S.tokens.length;
+          break;
+        }
         if (!S.history.length) break;
-        if (S.phase === 'input' && S.tokens.length && S.histIdx === null) break;  // 輸入中唔回帶
         if (S.histIdx === null) {
           if (id === 'rep_d') break;
           S.histIdx = S.history.length - 1;

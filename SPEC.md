@@ -72,6 +72,7 @@
 - CMPLX 模式 STO 變數存成個複數
 - SD/REG 統計數據熄機再開仍然保留
 - PRGM:For 起始值已超過終點(For 5→A To 1)成個迴圈唔行
+- 輸入算式期間撳 ▲ 游標跳去最前、▼ 跳去最尾
 
 ### 已由 8tatTV 教學片核實(youtube K_vaEZOcUQE,fx-50FH II 實機特寫)
 - MODE 選單:`COMP CMPLX BASE` / `SD REG PRGM`,數字用**下行大字**對齊名稱下面,兩邊有 ◄ ► 邊緣箭咀
