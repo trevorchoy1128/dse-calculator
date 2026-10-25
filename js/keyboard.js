@@ -9,8 +9,8 @@ const KEY_DEFS = [
 
   ['prog', 5.8,  21, 13.7, 5.4, 'k-orange k-pill', 'Prog', '<span class="c-shift">EXIT</span>'],
   ['fmla', 21.4, 21, 13.7, 5.4, 'k-orange k-pill', 'FMLA', ''],
-  ['inv',  68.1, 21, 13.7, 5.4, 'k-grey k-pill k-it', '<i>x</i><sup>-1</sup>', '<span class="c-shift"><i>x</i>!</span><span class="c-green">LOGIC</span>'],
-  ['cube', 83.7, 21, 13.7, 5.4, 'k-grey k-pill k-it', '<i>x</i><sup>3</sup>', '<span class="c-shift">³√</span>'],
+  ['inv',  68.1, 21, 13.7, 5.4, 'k-dark k-pill k-it', '<i>x</i><sup>-1</sup>', '<span class="c-shift"><i>x</i>!</span><span class="c-green">LOGIC</span>'],
+  ['cube', 83.7, 21, 13.7, 5.4, 'k-dark k-pill k-it', '<i>x</i><sup>3</sup>', '<span class="c-shift">³√</span>'],
 
   ['abc',  5.8,  29.9, 13.7, 5.1, 'k-dark', 'a<span class="sm">b/c</span>', '<span class="c-shift">d/c</span>'],
   ['sqrt', 21.4, 29.9, 13.7, 5.1, 'k-dark', '√', ''],
@@ -1480,8 +1480,11 @@ const App = (() => {
         break;
       }
       case 'rep_u': case 'rep_d': {
+        if (S.phase === 'input' && S.tokens.length && S.histIdx === null) {   // 輸入中:▲ 游標去頭、▼ 去尾(用戶實機核實)
+          S.cursor = id === 'rep_u' ? 0 : S.tokens.length;
+          break;
+        }
         if (!S.history.length) break;
-        if (S.phase === 'input' && S.tokens.length && S.histIdx === null) break;  // 輸入中唔回帶
         if (S.histIdx === null) {
           if (id === 'rep_d') break;
           S.histIdx = S.history.length - 1;
