@@ -69,23 +69,21 @@
     el._teachT = setTimeout(() => el.classList.remove('teach-flash'), 1000);
   }
 
-  // 按鍵震動:Android 用 Vibration API;iPhone(iOS 18+)唔支援 vibrate,
-  // 改用隱藏 switch checkbox 嘅 label.click() 觸發系統觸覺回饋
-  const hapticSwitch = document.createElement('input');
-  hapticSwitch.type = 'checkbox';
-  hapticSwitch.setAttribute('switch', '');
-  hapticSwitch.id = 'haptic-switch';
-  const hapticLabel = document.createElement('label');
-  hapticLabel.htmlFor = 'haptic-switch';
-  for (const el of [hapticSwitch, hapticLabel]) {
-    el.setAttribute('aria-hidden', 'true');
-    el.style.cssText = 'position:fixed;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
-    document.body.appendChild(el);
-  }
-  function haptic() {
+  // 按鍵震動:Android 用 Vibration API(按落即震)。
+  // iPhone 冇 vibrate:iOS 18+ 撳 switch checkbox 嘅 label 會觸發系統觸覺回饋,
+  // 但要喺有「用戶操作」資格嘅事件(touchend)入面撳,pointerdown 唔得
+  function iosHaptic() {
     try {
-      if (navigator.vibrate) navigator.vibrate(10);
-      else hapticLabel.click();
+      const label = document.createElement('label');
+      label.setAttribute('aria-hidden', 'true');
+      label.style.display = 'none';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.setAttribute('switch', '');
+      label.appendChild(input);
+      document.head.appendChild(label);
+      label.click();
+      document.head.removeChild(label);
     } catch (e) {}
   }
 
@@ -97,9 +95,14 @@
     t.classList.add('pressed');
     setTimeout(() => t.classList.remove('pressed'), 120);
     teachFlash(t);
-    haptic();
+    try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) {}
     App.press(t.dataset.key);
   });
+  if (!navigator.vibrate) {
+    keysEl.addEventListener('touchend', e => {
+      if (e.target.closest && e.target.closest('[data-key]')) iosHaptic();
+    });
+  }
 
   // 實體鍵盤(桌面測試用)
   const KEYMAP = {
